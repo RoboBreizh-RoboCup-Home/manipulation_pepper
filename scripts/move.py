@@ -6,10 +6,10 @@ class Motion():
     def __init__(self, app):
         app.start()
         session = app.session
-        animation_player_service = session.service("ALAnimationPlayer")
+        self.animation_player_service = session.service("ALAnimationPlayer")
 
     def animate(self,name:str):
-        future = animation_player_service.run(name, _async=True)
+        future = self.animation_player_service.run(name, _async=True)
         # wait the end of the animation
         future.value()
 
