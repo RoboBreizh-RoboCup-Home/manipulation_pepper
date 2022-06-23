@@ -8,7 +8,7 @@ class Motion():
         session = app.session
         animation_player_service = session.service("ALAnimationPlayer")
 
-    def animate(name:str):
+    def animate(self,name:str):
         future = animation_player_service.run(name, _async=True)
         # wait the end of the animation
         future.value()
