@@ -167,6 +167,11 @@ CATKIN_DEPENDS message_runtime
 ## in contrast to setup.py, you can choose the destination
 catkin_install_python(PROGRAMS
   scripts/move.py
+  scripts/look_around.py
+  scripts/look_down.py
+  scripts/look_top_right.py
+  scripts/look_up.py
+  scripts/point_to_position.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
