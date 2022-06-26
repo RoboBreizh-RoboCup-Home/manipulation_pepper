@@ -2,6 +2,8 @@ import time
 import qi
 import sys
 import math
+import rospy
+from manipulation_pepper.srv import EmptySrv
 
 
 class Motion():
@@ -10,6 +12,9 @@ class Motion():
         session = app.session
         self.motion_service = session.service("ALMotion")
         self.motion_service.setStiffnesses("Head", 1.0)
+        rospy.init_node('robobreizh/manipulation/look_around')
+        rospy.Service('robobreizh/manipulation/look_around', EmptySrv, self.animate)
+        rospy.spin()
 
     def setYawPose(self,angleHeadYaw,increment):
         angleLists = []
@@ -49,10 +54,6 @@ class Motion():
         print(angleLists)
         print(timeLists)
         self.motion_service.angleInterpolation(names, angleLists, timeLists, isAbsolute)
-
-        # self.motion_service.wakeUp()
-
-
 
 
 if __name__ == "__main__":

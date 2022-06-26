@@ -2,7 +2,8 @@ import time
 import qi
 import sys
 import math
-
+import naoqi_bridge_msgs.msg._JointAnglesWithSpeed
+import message_filters
 
 class Motion():
     def __init__(self, app):

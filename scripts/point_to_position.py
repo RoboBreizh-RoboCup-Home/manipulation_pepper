@@ -2,7 +2,8 @@ import time
 import qi
 import sys
 import math
-
+import rospy
+from manipulation_pepper.srv import EmptySrv
 
 class Motion():
     def __init__(self, app):
@@ -10,7 +11,9 @@ class Motion():
         session = app.session
         self.motion_service = session.service("ALMotion")
         self.motion_service.setStiffnesses("Head", 1.0)
-
+        rospy.init_node('robobreizh/manipulation/pointin_in_front')
+        rospy.Service('robobreizh/manipulation/pointing_in_front', EmptySrv, self.animate)
+        rospy.spin()
     def arrDegreeToRad(self,angles:list):
         res = []
         for angle in angles:

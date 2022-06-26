@@ -13,6 +13,7 @@ find_package(catkin REQUIRED COMPONENTS
   sensor_msgs
   geometry_msgs
   message_generation
+  naoqi_bridge_msgs
 )
 
 
@@ -54,10 +55,11 @@ catkin_python_setup()
 #    FILES
 # )
 
-## Generate services in the 'srv' folder
-# add_service_files(
-#   FILES
-# )
+# Generate services in the 'srv' folder
+add_service_files(
+  FILES
+  EmptySrv.srv
+)
 
 ## Generate actions in the 'action' folder
 # add_action_files(
@@ -70,6 +72,7 @@ generate_messages(
    DEPENDENCIES
    std_msgs
    geometry_msgs  # Or other packages containing msgs
+   naoqi_bridge_msgs
 )
 
 ################################################

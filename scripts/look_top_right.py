@@ -2,7 +2,8 @@ import time
 import qi
 import sys
 import math
-
+import rospy
+from manipulation_pepper.srv import EmptySrv
 
 class Motion():
     def __init__(self, app):
@@ -10,6 +11,9 @@ class Motion():
         session = app.session
         self.motion_service = session.service("ALMotion")
         self.motion_service.setStiffnesses("Head", 1.0)
+        rospy.init_node('robobreizh/manipulation/look_top_right')
+        rospy.Service('robobreizh/manipulation/look_top_right', EmptySrv, self.animate)
+        rospy.spin()       
 
     def animate(self):
 
