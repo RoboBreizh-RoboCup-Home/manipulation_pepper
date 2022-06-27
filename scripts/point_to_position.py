@@ -3,7 +3,7 @@ import qi
 import sys
 import math
 import rospy
-from manipulation_pepper.srv import EmptySrv
+from manipulation_pepper.srv import EmptySrv,EmptySrvResponse
 
 class Motion():
     def __init__(self, app):
@@ -11,8 +11,8 @@ class Motion():
         session = app.session
         self.motion_service = session.service("ALMotion")
         self.motion_service.setStiffnesses("Head", 1.0)
-        rospy.init_node('robobreizh/manipulation/pointin_in_front')
-        rospy.Service('robobreizh/manipulation/pointing_in_front', EmptySrv, self.animate)
+        rospy.init_node('point_in_front')
+        rospy.Service('robobreizh/manipulation/point_in_front', EmptySrv, self.animate)
         rospy.spin()
     def arrDegreeToRad(self,angles:list):
         res = []
@@ -20,7 +20,7 @@ class Motion():
             res.append(math.radians(angle))
         return res
 
-    def animate(self):
+    def animate(self,req):
 
         # Example showing multiple trajectories
         names = ["RShoulderPitch","RShoulderRoll","RElbowYaw","RElbowRoll","RWristYaw"]
@@ -49,6 +49,7 @@ class Motion():
         self.motion_service.angleInterpolation(names, angleLists, timeLists, isAbsolute)
 
         # self.motion_service.wakeUp()
+        return EmptySrvResponse()
 
 
 
@@ -63,5 +64,4 @@ if __name__ == "__main__":
               "Please check your script arguments. Run with -h option for help.")
         sys.exit(1)
     motion = Motion(app)
-    motion.animate()
 

@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <launch>
-    <node pkg="manipulation_pepper" type="look_around.py" name="look around" output="screen"/>
-    <node pkg="manipulation_pepper" type="look_up.py" name="look up" output="screen"/>
-    <node pkg="manipulation_pepper" type="look_down.py" name="look down" output="screen"/>
-    <node pkg="manipulation_pepper" type="point_to_position.py" name="point in front" output="screen"/>
+    <node pkg="manipulation_pepper" type="look_around.py" name="look_around" output="screen"/>
+    <node pkg="manipulation_pepper" type="look_up.py" name="look_up" output="screen"/>
+    <node pkg="manipulation_pepper" type="look_down.py" name="look_down" output="screen"/>
+    <node pkg="manipulation_pepper" type="point_to_position.py" name="point_in_front" output="screen"/>
 </launch>

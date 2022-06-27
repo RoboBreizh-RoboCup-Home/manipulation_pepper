@@ -3,7 +3,7 @@ import qi
 import sys
 import math
 import rospy
-from manipulation_pepper.srv import EmptySrv
+from manipulation_pepper.srv import EmptySrv,EmptySrvResponse
 
 
 class Motion():
@@ -12,11 +12,11 @@ class Motion():
         session = app.session
         self.motion_service = session.service("ALMotion")
         self.motion_service.setStiffnesses("Head", 1.0)
-        rospy.init_node('robobreizh/manipulation/look_down')
+        rospy.init_node('look_down')
         rospy.Service('robobreizh/manipulation/look_down', EmptySrv, self.animate)
         rospy.spin()
 
-    def animate(self):
+    def animate(self,req):
 
         # Example showing multiple trajectories
         names      = ["HeadPitch","HeadYaw"]
@@ -31,6 +31,7 @@ class Motion():
         print(angleLists)
         print(timeLists)
         self.motion_service.angleInterpolation(names, angleLists, timeLists, isAbsolute)
+        return EmptySrvResponse()
 
 
 if __name__ == "__main__":
@@ -43,5 +44,3 @@ if __name__ == "__main__":
               "Please check your script arguments. Run with -h option for help.")
         sys.exit(1)
     motion = Motion(app)
-    motion.animate()
-

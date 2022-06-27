@@ -10,6 +10,7 @@ class Motion():
         app.start()
         session = app.session
         self.motion_service = session.service("ALMotion")
+        self.posture = session.service("ALRobotPosture")
         self.motion_service.setStiffnesses("Head", 1.0)
 
     def animate(self):
@@ -56,8 +57,7 @@ class Motion():
         isAbsolute  = True
         self.motion_service.angleInterpolation(names, angleLists, timeLists, isAbsolute)
 
-        self.motion_service.setStiffnesses("Head", 0.0)
-
+        self.posture.goToPosture("StandZero",1.0)
 
 
 if __name__ == "__main__":
