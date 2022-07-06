@@ -11,8 +11,8 @@ class Motion():
         session = app.session
         self.motion_service = session.service("ALMotion")
         self.motion_service.setStiffnesses("Head", 1.0)
-        rospy.init_node('robobreizh/manipulation/look_top_right')
-        rospy.Service('robobreizh/manipulation/look_top_right', EmptySrv, self.animate)
+        rospy.init_node('look_top_right')
+        rospy.Service('/robobreizh/manipulation/look_top_right', EmptySrv, self.animate)
         rospy.spin()       
 
     def animate(self):

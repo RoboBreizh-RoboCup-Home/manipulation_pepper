@@ -12,7 +12,7 @@ class Motion():
         self.motion_service = session.service("ALMotion")
         self.motion_service.setStiffnesses("Head", 1.0)
         rospy.init_node('point_in_front')
-        rospy.Service('robobreizh/manipulation/point_in_front', EmptySrv, self.animate)
+        rospy.Service('/robobreizh/manipulation/point_in_front', EmptySrv, self.animate)
         rospy.spin()
     def arrDegreeToRad(self,angles:list):
         res = []

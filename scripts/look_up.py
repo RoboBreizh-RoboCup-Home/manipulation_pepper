@@ -11,7 +11,7 @@ class Motion():
         session = app.session
         self.motion_service = session.service("ALMotion")
         rospy.init_node('look_up')
-        rospy.Service('robobreizh/manipulation/look_up', EmptySrv, self.animate)
+        rospy.Service('/robobreizh/manipulation/look_up', EmptySrv, self.animate)
         rospy.spin()
 
     def animate(self,req):
