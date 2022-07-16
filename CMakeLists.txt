@@ -173,6 +173,7 @@ catkin_install_python(PROGRAMS
   scripts/look_around.py
   scripts/look_down.py
   scripts/look_top_right.py
+  scripts/look_above_wall.py
   scripts/look_up.py
   scripts/point_to_position.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
