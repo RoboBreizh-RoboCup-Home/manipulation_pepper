@@ -30,8 +30,6 @@ class Motion():
         pitchTimeLists = [1.0]
         timeLists = [pitchTimeLists,[1.0]]
         isAbsolute = True
-        print(angleLists)
-        print(timeLists)
         self.motion_service.angleInterpolation(names, angleLists, timeLists, isAbsolute)
         return EmptySrvResponse()
 

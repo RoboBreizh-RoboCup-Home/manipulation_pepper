@@ -44,8 +44,6 @@ class Motion():
         timeLists = [RShoulderPitchTimeLists,RShoulderRollTimeLists,RElbowYawTimeLists,RElbowRollTimeLists,RWristYawTimeLists]
 
         isAbsolute = True
-        print(angleLists)
-        print(timeLists)
         self.motion_service.angleInterpolation(names, angleLists, timeLists, isAbsolute)
 
         # self.motion_service.wakeUp()
