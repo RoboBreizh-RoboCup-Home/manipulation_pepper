@@ -51,14 +51,22 @@ catkin_python_setup()
 ##   * add every package in MSG_DEP_SET to generate_messages(DEPENDENCIES ...)
 
 ## Generate messages in the 'msg' folder
-# add_message_files(
-#    FILES
-# )
+add_message_files(
+  FILES
+  CloudIndexed.msg 
+  CloudSources.msg 
+  GraspConfig.msg 
+  GraspConfigList.msg 
+  DetectedObj.msg 
+  BoundingBoxCoord.msg 
+  GraspServerRequest.msg
+)
 
 # Generate services in the 'srv' folder
 add_service_files(
   FILES
   EmptySrv.srv
+  object_detection.srv
 )
 
 ## Generate actions in the 'action' folder
@@ -170,12 +178,13 @@ CATKIN_DEPENDS message_runtime
 ## in contrast to setup.py, you can choose the destination
 catkin_install_python(PROGRAMS
   scripts/move.py
-  scripts/look_around.py
+  scripts/look_around.py 
   scripts/look_down.py
   scripts/look_top_right.py
   scripts/look_above_wall.py
   scripts/look_up.py
   scripts/point_to_position.py
+  scripts/detection_node.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
