@@ -65,6 +65,10 @@
 	<build_export_depend>naoqi_bridge_msgs</build_export_depend>
 	<exec_depend>naoqi_bridge_msgs</exec_depend>
 
+  <build_depend>actionlib</build_depend>
+	<build_export_depend>actionlib</build_export_depend>
+	<exec_depend>actionlib</exec_depend>
+
 	<!-- <build_depend>libqi</build_depend>
 	<build_export_depend>libqi</build_export_depend>
 	<exec_depend>libqi</exec_depend> -->

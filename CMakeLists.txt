@@ -14,6 +14,8 @@ find_package(catkin REQUIRED COMPONENTS
   geometry_msgs
   message_generation
   naoqi_bridge_msgs
+  actionlib
+  actionlib_msgs
 )
 
 
@@ -62,10 +64,12 @@ add_service_files(
 )
 
 ## Generate actions in the 'action' folder
-# add_action_files(
-#   FILES
-#   # Speech_processing.action
-# )
+add_action_files(
+  DIRECTORY 
+  action 
+  FILES 
+  Movement.action
+)
 
 ## Generate added messages and services with any dependencies listed here
 generate_messages(
@@ -73,6 +77,7 @@ generate_messages(
    std_msgs
    geometry_msgs  # Or other packages containing msgs
    naoqi_bridge_msgs
+   actionlib_msgs
 )
 
 ################################################
@@ -176,6 +181,8 @@ catkin_install_python(PROGRAMS
   scripts/look_above_wall.py
   scripts/look_up.py
   scripts/point_to_position.py
+  scripts/movement_client.py
+  scripts/movement_server.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
