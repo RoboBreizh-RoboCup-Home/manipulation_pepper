@@ -53,10 +53,6 @@ catkin_python_setup()
 ## Generate messages in the 'msg' folder
 add_message_files(
   FILES
-  CloudIndexed.msg 
-  CloudSources.msg 
-  GraspConfig.msg 
-  GraspConfigList.msg 
   DetectedObj.msg 
   BoundingBoxCoord.msg 
   GraspServerRequest.msg

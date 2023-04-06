@@ -24,7 +24,7 @@ import tf2_py as tf2
 from tf2_sensor_msgs.tf2_sensor_msgs import do_transform_cloud
 
 from manipulation_pepper.srv import object_detection
-from manipulation_pepper.msg import CloudIndexed, CloudSources, GraspConfigList, DetectedObj, GraspConfig, BoundingBoxCoord
+from manipulation_pepper.msg import DetectedObj, BoundingBoxCoord
 
 
 # import pcl
@@ -113,7 +113,6 @@ class ObjectsDetection():
         rospy.loginfo("FINISH LOAD MODEL")
         
         self.bridge = CvBridge()
-        self.object_pose = [0, 0, 0, 0]
         self.cloud_points = []
         self.tf_buffer = tf2_ros.Buffer(cache_time=rospy.Duration(12))
         
@@ -135,8 +134,6 @@ class ObjectsDetection():
             '/naoqi_driver/camera/front/image_raw', Image)
         self.pointcloud_sub = message_filters.Subscriber(
             '/points', PointCloud2)
-        self.depth_sub = message_filters.Subscriber(
-            '/naoqi_driver/camera/depth/image_raw', Image)
         
         rospy.loginfo("FINISH INIT")
 
@@ -149,87 +146,39 @@ class ObjectsDetection():
 
 
     def handle_object_detection(self, req):
-        image_sub = rospy.wait_for_message(
-            '/naoqi_driver/camera/front/image_raw', Image)
-        pointcloud_sub = rospy.wait_for_message(
-            '/points', PointCloud2)
-        depth_sub = rospy.wait_for_message(
-            '/naoqi_driver/camera/depth/image_raw', Image)
-
-        rgb_image = self.bridge.imgmsg_to_cv2(image_sub)
-
-        _, detections = self.model.detect_opencv(rgb_image.copy())
+        time_begin = rospy.Time.now()
+        rospy.loginfo("HANDLE REQUEST")
+            
+        x_start, y_start, x_end, y_end = req.x_min, req.y_min, req.x_max, req.y_max
+        pointcloud_sub = req.pc
         
-        # cv2.imshow('Inference', image)
-        # cv2.waitKey(1)
-        print("DETECTED OBJECTS: ", detections)
-
-
-        # detected_obj = {}
-        points = []
-        # point_clouds = []
-        labels = []
-        bounding_boxes = []
-        threshold = 40.0
-
-        for obj in detections:
-            if (float(obj[1]) > threshold):  # Check if the confidence is above a threshold
-                labels.append(String(obj['class_name']))
-                x_start, y_start, x_end, y_end = obj['coordinates']
-                x, y = (x_start + x_end) / 2, (y_start + y_end) / 2
-                boundingbox = BoundingBoxCoord()
-                boundingbox.x_min, boundingbox.y_min, boundingbox.x_max, boundingbox.y_max = (
-                    Int64(x) for x in obj['coordinates'])
-
-                bounding_boxes.append(boundingbox)
-
-                points.append([int(x), int(y)])
-                # pc = self.crop_object_pointcloud(x_min, y_min, x_max, y_max, [x,y], pointcloud_sub)
-                # point_clouds.append(pc)
-
-        if not labels:
-            final_msg = DetectedObj()
-            final_msg.object_names = [String("nothing")]
-            return final_msg
-
-        poses = self.estimate_pose(points, pointcloud_sub)
-        print(points)
-        obj_poseXYZ = []
-        for pos in poses:
-            temp = Pose()
-            temp.position.x = pos[0]
-            temp.position.y = pos[1]
-            temp.position.z = pos[2]
-
-            obj_poseXYZ.append(temp)
-
         fields = [PointField('x', 0, PointField.FLOAT32, 1),
-                  PointField('y', 4, PointField.FLOAT32, 1),
-                  PointField('z', 8, PointField.FLOAT32, 1),
-                  ]
+                    PointField('y', 4, PointField.FLOAT32, 1),
+                    PointField('z', 8, PointField.FLOAT32, 1),
+                    ]
+
         header = Header()
         header.stamp = rospy.Time.now()
-        poses_msg = pc2.create_cloud(header, fields, poses)
-        self.visualize_detect_pub.publish(poses_msg)
+        header.frame_id = pointcloud_sub.header.frame_id
+        try:
+            self.crop_pointcloud(x_start, y_start, x_end, y_end, pointcloud_sub)
+            segmented_points = self.pointcloud_segmentation(np.array(self.cloud_points))
+            
+            pc_msg = pc2.create_cloud(header, fields, segmented_points)
+            
+        except Exception as e:
+            rospy.logerr(e)
 
-        final_msg = DetectedObj()
-        final_msg.object_names = labels
-        final_msg.objects_bb = bounding_boxes
-        final_msg.object_poses = poses_msg
-        final_msg.cloud = pointcloud_sub
-        final_msg.object_posesXYZ = obj_poseXYZ
-        print(obj_poseXYZ)
-        return final_msg
+            pc_msg = pc2.create_cloud(header, fields, self.cloud_points)            
         
-
-    def estimate_pose(self, points, pointcloud_sub):
-        res = []
-        gen = pc2.read_points(pointcloud_sub, field_names=(
-            "x", "y", "z"), skip_nans=True, uvs=points)
-        for p in gen:
-            res.append(p)
-        return res
-
+        self.visualize_detect_pub(pc_msg)
+    
+        time_end = rospy.Time.now()
+        duration = time_end - time_begin
+        rospy.loginfo("PROCESSING TIME: " + str(duration.to_sec()) + " secs")
+        
+        return pc_msg
+        
 
     def continuous_node(self):
         ts = message_filters.ApproximateTimeSynchronizer(
@@ -476,5 +425,5 @@ if __name__ == "__main__":
     # 1. Continuous detection by ROS subscriber/callback (asynchronous)
     # 2. Synchronous detection via ROS Service (Server/Client-like)
 
-    obj_detection_node.continuous_node()
-    # obj_detection_node.service_node()
+    # obj_detection_node.continuous_node()
+    obj_detection_node.service_node()
