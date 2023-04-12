@@ -40,6 +40,49 @@ class MovementActionServer(object):
             rospy.loginfo("Executing raise hand")
             self.movement.move_hand_up()
             result = MovementResult(success=True)
+        elif(goal.order=="crouch"):
+            rospy.loginfo("Executing crouch")
+            self.movement.crouch()
+            result = MovementResult(success=True)
+        elif(goal.order=="straight_arm"):
+            rospy.loginfo("Executing straight arm")
+            self.movement.straight_arm()
+            result = MovementResult(success=True)
+        elif(goal.order=="grab_bag"):
+            rospy.loginfo("Executing grab bag")
+            #self.movement.crouch()
+            self.movement.straight_arm()
+            rospy.sleep(1)
+            self.movement.hold_bag()
+            result = MovementResult(success=True)
+        elif(goal.order=="put_down_bag"):
+            rospy.loginfo("Executing grab bag")
+            self.movement.crouch()
+            self.movement.stop_hold_bag()
+            self.movement.straight_arm()
+            rospy.sleep(1)
+            self.movement.hold_bag()
+            result = MovementResult(success=True)
+        elif(goal.order=="plan_joints"):
+            rospy.loginfo("Executing plan joints")
+            plan = self.movement.plan_joints()
+            success = self.movement.execute_plan(plan[1])
+            result = MovementResult(success)
+        elif(goal.order=="plan_xyz"):
+            rospy.loginfo("Executing plan xyz")
+            plan = self.movement.plan_xyz_position()
+            success = self.movement.execute_plan(plan[1])
+            result = MovementResult(success)
+        elif(goal.order=="plan_rpy"):
+            rospy.loginfo("Executing plan rpy")
+            plan = self.movement.plan_rpy_position()
+            success = self.movement.execute_plan(plan[1])
+            result = MovementResult(success)
+        elif(goal.order=="plan_6d"):
+            rospy.loginfo("Executing plan 6d")
+            plan = self.movement.plan_6d_pose()
+            success = self.movement.execute_plan(plan[1])
+            result = MovementResult(success)
         else:
             rospy.logwarn(f"Unrecognized order : {goal.order}")
             result = MovementResult(success=False)
