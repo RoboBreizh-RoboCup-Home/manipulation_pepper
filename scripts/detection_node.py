@@ -302,38 +302,42 @@ class ObjectsDetection():
         return labels
 
 
-    def ransac_plane(self, points, num_iterations=50, sample_size=3, threshold=0.01):
-        best_plane = None
-        best_inliers = None
+    def ransac_plane(self, points, num_iterations=1000, threshold=0.01):
+        # best_plane = None
+        best_inliers = None # idx of inliers
         best_num_inliers = 0
 
-        for i in range(num_iterations):
+        for _ in range(num_iterations):
             # Randomly sample points to form a candidate plane
-            sample = points[np.random.choice(points.shape[0], size=sample_size, replace=False), :]
+            sample = points[np.random.choice(points.shape[0], size=3, replace=False), :]
 
             # Compute the parameters of the candidate plane
             v1 = sample[1] - sample[0]
             v2 = sample[2] - sample[0]
-            n = np.cross(v1, v2)
+            normal = np.cross(v1, v2) 
+            n /= np.linalg.norm(normal)
             d = -np.dot(n, sample[0])
 
             # Compute the distance of each point to the plane
-            distances = np.abs(np.dot(points, n) + d) / np.sqrt(np.sum(n**2))
+            distances = np.abs(np.dot(points, n) + d) / np.linalg.norm(n)
 
             # Count the number of inliers
-            inliers = points[distances < threshold, :]
-            num_inliers = inliers.shape[0]
+            inliers = np.where(np.abs(distances) <= threshold)
+            num_inliers = len(inliers)
 
             # Update the best plane if this one has more inliers
             if num_inliers > best_num_inliers:
-                best_plane = (n, d)
+                # best_plane = (n, d)
                 best_inliers = inliers
                 best_num_inliers = num_inliers
 
+        
         # Compute the remaining points that are not on the plane
-        outliers = points[distances >= threshold, :]
-
-        return outliers, best_inliers
+        mask = np.ones(len(points), dtype=bool)
+        mask[best_inliers] = False
+        outliers = points[mask]
+        
+        return outliers
 
 
     def pointcloud_segmentation(self, points):
@@ -352,7 +356,7 @@ class ObjectsDetection():
         # largest_cluster_points = points[largest_cluster_indices]
         # return largest_cluster_points
         
-        outliers, inliers = self.ransac_plane(points, num_iterations=100, threshold=0.01)
+        outliers = self.ransac_plane(points, num_iterations=100, threshold=0.01)
         return outliers
 
 
@@ -384,36 +388,6 @@ class ObjectsDetection():
         image_cropped = image[min_y:max_y, min_x:max_x]
         return image_cropped
 
-    
-    def pointcloud_segmentation_o3d(self, points_list):
-        # # Normalisation:
-        # scaled_points = StandardScaler().fit_transform(points)
-        # # Clustering:
-        # model = DBSCAN(eps=0.15, min_samples=10)
-        # model.fit(scaled_points)
-        
-        # convert list of points to numpy array
-        points_arr = np.array(points_list)
-
-        # create PointCloud object
-        pcd = o3d.geometry.PointCloud()
-
-        # assign points to the PointCloud object
-        pcd.points = o3d.utility.Vector3dVector(points_arr)
-        labels = np.array(pcd.cluster_dbscan(eps=0.1, min_points=10, print_progress=False))
-
-        # get the number of clusters and their sizes
-        max_label = labels.max()
-        sizes = np.zeros(max_label + 1)
-        for i in range(len(labels)):
-            sizes[labels[i]] += 1
-
-        # get the index of the largest cluster
-        largest_cluster_idx = np.argmax(sizes)
-
-        # extract the points belonging to the largest cluster
-        largest_cluster_points = pcd.select_by_index(np.where(labels == largest_cluster_idx)[0])
-        return largest_cluster_points
     
 
 
