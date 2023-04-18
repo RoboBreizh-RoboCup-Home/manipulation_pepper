@@ -1,5 +1,6 @@
 #goal definition
 string order
+float32[] target
 ---
 #result definition
 bool success

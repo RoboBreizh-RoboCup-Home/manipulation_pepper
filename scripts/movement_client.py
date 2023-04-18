@@ -18,7 +18,7 @@ def movement_client(order):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
         description="Send an order to the movement server.")
-    parser.add_argument("order", help="Order to send (raise_hand, pose_dialog, pose_middle, pose_restaurant, stop_pose_restaurant)")
+    parser.add_argument("order", help="Order to send (raise_hand, pose_dialog, pose_middle, pose_restaurant, stop_pose_restaurant, plan_joints, plan_6d)")
     args = parser.parse_args()
 
     if args.order:
