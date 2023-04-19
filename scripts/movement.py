@@ -75,10 +75,10 @@ class Movement :
         # BODY
         self.joint_upper_body = ["HeadYaw", "HeadPitch", "LShoulderPitch", "LShoulderRoll", "LElbowYaw", "LElbowRoll", "LWristYaw", "RShoulderPitch", "RShoulderRoll", "RElbowYaw", "RElbowRoll", "RWristYaw"]
         self.joint_lower_body = ["HipRoll", "HipPitch", "KneePitch"]
-        self.movegroup_larm = moveit_commander.MoveGroupCommander("body") # Corresponds to the lower body joints
-        self.movegroup_larm.set_goal_tolerance(self.tolerance)
-        self.movegroup_larm.set_planning_time(self.planning_time)
-        self.movegroup_larm.set_planner_id(self.planner)
+        self.movegroup_lower_body = moveit_commander.MoveGroupCommander("lower_body") # Corresponds to the lower body joints
+        self.movegroup_lower_body.set_goal_tolerance(self.tolerance)
+        self.movegroup_lower_body.set_planning_time(self.planning_time)
+        self.movegroup_lower_body.set_planner_id(self.planner)
 
         # HEAD
         self.joint_head = ["HeadYaw","HeadPitch"]
@@ -112,6 +112,10 @@ class Movement :
         self.crouching = False
         self.holding_pose_restaurant = False
         self.holding_bag = False
+        self.hand_joint_value = 0.5
+        self.maintain_hand_pose = False
+        self.last_pose = None
+        self.holding_pose = False
 
         ##################################
         # THREADS
@@ -119,6 +123,7 @@ class Movement :
         self.thread_pose_restaurant = None
         self.thread_crouch = None
         self.thread_hold_bag = None
+        self.thread_hand = None
 
     ##Destructor of a Movement object
     #@param self
@@ -146,13 +151,45 @@ class Movement :
     ##Function to make the robot close his hand
     #@param self
     def close_hand(self):
-        goal = 20
         msg = JointAnglesWithSpeed()
         msg.joint_names = self.joint_rhand
-        msg.joint_angles = [np.deg2rad(goal)]
-        msg.speed = 0.2
+        msg.joint_angles = 1.0
+        msg.speed = 0.4
         print(f"Publishing : {msg}")
         self.pub_angles.publish(msg)
+
+    ##Function to set the robot hand to a joint value and maintain it with a Thread. If the Thread is already running, it modifies the hand joint value that the thread is sending.
+    #@param self
+    #@param hand_joint_value
+    def set_hand(self, hand_joint_value):
+        rospy.loginfo(f"got jointvalue : {hand_joint_value}")
+        assert hand_joint_value >= 0.0 and hand_joint_value <= 1.0
+
+        self.hand_joint_value = hand_joint_value
+        self.maintain_hand_pose = True
+
+        if(self.thread_hand==None):
+            self.thread_hand = Thread(target=self.maintain_hand_task)
+            self.thread_hand.start()
+    
+    ##Function to stop the hand thread
+    #@param self
+    def stop_hand(self):
+        self.maintain_hand_pose = False
+        self.thread_hand.join()
+        self.thread_hand = None
+
+    ##Thread to maintain the hand at set joint value
+    #@param self
+    def maintain_hand_task(self):
+        msg = JointAnglesWithSpeed()
+        msg.joint_names = self.joint_rhand
+        msg.speed = 0.4
+
+        while(self.maintain_hand_pose):
+            msg.joint_angles = self.hand_joint_value
+            rospy.sleep(0.5)
+            self.pub_angles.publish(msg)
 
     ##Function to put the robot in a base pose
     #@param self
@@ -254,6 +291,7 @@ class Movement :
         msg.speed = 0.1
         rospy.loginfo(f"Publishing : {msg}")
         self.pub_angles.publish(msg)
+        self.last_pose = msg
 
     ##Function to make the robot hold the bag (starts a thread to maintain holding)
     #@param self
@@ -278,6 +316,27 @@ class Movement :
         self.holding_bag = False
         self.thread_hold_bag.join()
 
+    ##Function to make the robot hold the bag (starts a thread to maintain holding)
+    #@param self
+    def hold_last_pose(self):
+        self.holding_pose = True
+        self.hold_last_pose_thread = Thread(target=self.hold_last_pose_task)
+        self.hold_last_pose_thread.start()
+
+    ##Thread to maintain the robot holding a bag
+    #@param self
+    def hold_last_pose_task(self):
+        while self.holding_pose:
+            self.pub_angles.publish(self.last_pose)
+            rospy.loginfo(self.last_pose)
+            rospy.sleep(0.5)
+
+    ##Function to stop the bag holding thread
+    #@param self
+    def stop_hold_last_pose(self):
+        self.holding_pose = False
+        self.hold_last_pose_thread.join()
+
     ##Function to stop the bag holding thread
     #@param self
     #@param plan
@@ -297,12 +356,15 @@ class Movement :
                 rospy.loginfo(f"Sending pos : {p.positions}")
                 rospy.loginfo(f"Sleep : {current_time-previous_time}")
                 self.pub_angles.publish(msg)
+                self.last_pose = msg
                 #rospy.sleep(current_time-previous_time)
                 #rospy.sleep(0.1)
                 previous_time = current_time
             return True
         return False
 
+    ##Function to plan a movement by giving target joint values
+    #@param self
     def plan_joints(self):
         begin_time = rospy.get_time()
         self.movegroup_rarm.set_start_state_to_current_state()
@@ -314,7 +376,9 @@ class Movement :
         rospy.loginfo(f"Planning done in {end_time-begin_time}s")
         return plan
 
-    #pose can be [x, y, z, rot_x, rot_y, rot_z] or [x, y, z, qx, qy, qz, qw] 
+    ##Function to plan a movement by giving target joint values
+    #@param self
+    #@param pose [x, y, z, rot_x, rot_y, rot_z] or [x, y, z, qx, qy, qz, qw] 
     def plan_6d_pose(self,pose):
         rospy.loginfo(f"Going to pose :{pose}")
         begin_time = rospy.get_time()
@@ -325,6 +389,9 @@ class Movement :
         rospy.loginfo(f"Planning done in {end_time-begin_time}s")
         return plan
     
+    ##Function to plan a movement by giving target position (xyz)
+    #@param self
+    #@param xyz
     def plan_xyz_position(self, xyz):
         begin_time = rospy.get_time()
         self.movegroup_rarm.set_start_state_to_current_state()
@@ -335,7 +402,9 @@ class Movement :
         rospy.loginfo(f"Planning done in {end_time-begin_time}s")
         return plan
     
-    #roll pitch yaw
+    ##Function to plan a movement by giving target orientation (rpy)
+    #@param self
+    #@param rpy
     def plan_rpy_orientation(self, rpy):
         begin_time = rospy.get_time()
         self.movegroup_rarm.set_start_state_to_current_state()
@@ -345,7 +414,9 @@ class Movement :
         rospy.loginfo(f"Planning done in {end_time-begin_time}s")
         return plan
     
-    #quaternion
+    ##Function to plan a movement by giving target quaternion
+    #@param self
+    #@param q
     def plan_q_orientation(self, q):
         begin_time = rospy.get_time()
         self.movegroup_rarm.set_start_state_to_current_state()
@@ -355,6 +426,8 @@ class Movement :
         rospy.loginfo(f"Planning done in {end_time-begin_time}s")
         return plan
     
+    ##Debug infos
+    #@param self
     def info(self):
         rospy.loginfo("######## INFO ########")
         rospy.loginfo(f"Planning frame : {self.movegroup_rarm.get_planning_frame()}")

@@ -55,10 +55,22 @@ class MovementActionServer(object):
                         rospy.loginfo("Executing plan 6d")
                         plan = self.movement.plan_6d_pose(rounded_target)
                     
+                    # If a plan was found, execute it
                     if(plan[0] == True):
                         success = self.execute(plan)
                 
+                elif(goal.order=="set_hand"):
+                    rospy.loginfo(f"Received target : {goal.target}.")
+                    rospy.loginfo("Executing set hand")
+                    self.movement.set_hand(goal.target[0])
+                    success=True
+
                 # Actions without arguments
+
+                elif(goal.order=="stop_hand"):
+                    rospy.loginfo("Executing stop hand")
+                    self.movement.stop_hand()
+                    success=True
 
                 elif(goal.order =="pose_middle"):
                     rospy.loginfo("Executing pose middle")
@@ -126,12 +138,19 @@ class MovementActionServer(object):
                     plan = self.movement.plan_6d_pose(target)
                     success=plan[0]
 
+                elif(goal.order=="hold_last_pose"):
+                    rospy.loginfo("Executing hold_last_pose")
+                    self.movement.hold_last_pose()
+                    success=True
+                
+                elif(goal.order=="stop_hold_last_pose"):
+                    rospy.loginfo("Executing stop hold_last_pose")
+                    self.movement.stop_hold_last_pose()
+                    success=True
+                
                 elif(goal.order=="test"):
                     rospy.loginfo("Executing test")
                     target = self.movement.movegroup_rarm.get_random_pose()
-                    # plan = self.movement.plan_xyz_position([target.pose.position.x,target.pose.position.y,target.pose.position.z])
-                    # if(plan[0]==True):
-                    #     success = self.execute(plan)
                     plan = self.movement.plan_6d_pose(target)
                     rospy.sleep(1)
                     success = self.execute(plan)
