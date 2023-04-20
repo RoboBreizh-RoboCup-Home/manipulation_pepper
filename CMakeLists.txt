@@ -53,9 +53,10 @@ catkin_python_setup()
 ##   * add every package in MSG_DEP_SET to generate_messages(DEPENDENCIES ...)
 
 ## Generate messages in the 'msg' folder
-# add_message_files(
-#    FILES
-# )
+add_message_files(
+   FILES
+   GraspConfig.msg
+)
 
 # Generate services in the 'srv' folder
 add_service_files(
@@ -183,6 +184,7 @@ catkin_install_python(PROGRAMS
   scripts/point_to_position.py
   scripts/movement_client.py
   scripts/movement_server.py
+  scripts/grasp_planner.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
