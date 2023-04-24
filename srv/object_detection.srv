@@ -1,0 +1,10 @@
+# Bouding box coordinate: top-left and right-bottom points
+std_msgs/Int64 x_min
+std_msgs/Int64 y_min
+std_msgs/Int64 x_max
+std_msgs/Int64 y_max
+# The source point cloud
+sensor_msgs/PointCloud2 pc
+---
+# Object point cloud
+sensor_msgs/PointCloud2 pc
