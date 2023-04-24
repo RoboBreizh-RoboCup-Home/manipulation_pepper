@@ -181,6 +181,7 @@ catkin_install_python(PROGRAMS
   scripts/look_up.py
   scripts/point_to_position.py
   scripts/detection_node.py
+  scripts/talker.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
