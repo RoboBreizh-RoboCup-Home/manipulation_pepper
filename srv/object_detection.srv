@@ -1,8 +1,8 @@
 # Bouding box coordinate: top-left and right-bottom points
-std_msgs/Int64 x_min
-std_msgs/Int64 y_min
-std_msgs/Int64 x_max
-std_msgs/Int64 y_max
+uint32 x_min
+uint32 y_min
+uint32 x_max
+uint32 y_max
 # The source point cloud
 sensor_msgs/PointCloud2 pc
 ---

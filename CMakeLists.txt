@@ -55,10 +55,10 @@ catkin_python_setup()
 ## Generate messages in the 'msg' folder
 add_message_files(
   FILES
-  DetectedObj.msg 
-  BoundingBoxCoord.msg 
-  GraspServerRequest.msg
-  GraspConfig.msg
+  # DetectedObj.msg 
+  # BoundingBoxCoord.msg 
+  # GraspServerRequest.msg
+  # GraspConfig.msg
 )
 
 # Generate services in the 'srv' folder
@@ -74,6 +74,7 @@ add_action_files(
   action 
   FILES 
   Movement.action
+  Grasp.action
 )
 
 ## Generate added messages and services with any dependencies listed here

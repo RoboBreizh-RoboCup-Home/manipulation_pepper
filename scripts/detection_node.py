@@ -180,11 +180,14 @@ class ObjectPointDetection():
         header.frame_id = pointcloud_sub.header.frame_id
         try:
             # Crop pointcloud according to bounding box
+            rospy.loginfo("crop_pointcloud")
             cropped_points = self.crop_pointcloud([x_start, y_start, x_end, y_end], pointcloud_sub)
             # Do the pointcloud segmentation
-            segmented_points = self.pointcloud_segmentation(np.array(cropped_points))
+            rospy.loginfo("pointcloud_segmentation")
+            #segmented_points = self.pointcloud_segmentation(np.array(cropped_points))
             # Convert to pointcloud msg
-            pc_msg = pc2.create_cloud(header, fields, segmented_points)
+            rospy.loginfo("create_cloud")
+            pc_msg = pc2.create_cloud(header, fields, cropped_points)
             
         except Exception as e:
             rospy.logerr(e)
@@ -371,7 +374,7 @@ class ObjectPointDetection():
             v1 = sample[1] - sample[0]
             v2 = sample[2] - sample[0]
             normal = np.cross(v1, v2) 
-            n /= np.linalg.norm(normal)
+            n = np.linalg.norm(normal)
             d = -np.dot(n, sample[0])
 
             # Compute the distance of each point to the plane

@@ -69,6 +69,11 @@
 	<build_export_depend>actionlib</build_export_depend>
 	<exec_depend>actionlib</exec_depend>
 
+  <build_depend>tf2_sensor_msgs</build_depend>
+	<build_export_depend>tf2_sensor_msgs</build_export_depend>
+	<exec_depend>tf2_sensor_msgs</exec_depend>
+  
+
 	<!-- <build_depend>libqi</build_depend>
 	<build_export_depend>libqi</build_export_depend>
 	<exec_depend>libqi</exec_depend> -->

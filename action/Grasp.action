@@ -1,0 +1,15 @@
+#goal definition
+string order
+#top left corner of the bounding box
+uint32 x_min 
+uint32 y_min
+#bottom right corner of the bounding box
+uint32 x_max
+uint32 y_max
+#sensor_msgs/PointCloud2 pointcloud
+---
+#result definition
+bool success
+---
+#feedback
+string feedback

@@ -24,7 +24,7 @@ class Movement :
         # ROS 
         ##################################
         try:
-            self.client_traj = SimpleActionClient("joint_trajectory",JointTrajectoryAction)
+            #self.client_traj = SimpleActionClient("joint_trajectory",JointTrajectoryAction)
             self.pub_turn = rospy.Publisher("cmd_vel",Twist,queue_size=10)
             self.pub_angles = rospy.Publisher("joint_angles",JointAnglesWithSpeed,queue_size=10)
         except(AttributeError,RuntimeError,UnboundLocalError,TypeError) as e:
