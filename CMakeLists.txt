@@ -8,18 +8,34 @@ project(manipulation_pepper)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
+  roscpp
   rospy
   std_msgs
   sensor_msgs
   geometry_msgs
   message_generation
   naoqi_bridge_msgs
+  cmake_modules
+  eigen_conversions
+  tf
 )
 
-
+find_package(PCL 1.8 REQUIRED)
+include_directories(${PCL_INCLUDE_DIRS})
+link_directories(${PCL_LIBRARY_DIRS})
+add_definitions(${PCL_DEFINITIONS})
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
+find_library(GPD_LIB NAMES gpd PATHS /usr/local/lib PATH_SUFFIXES lib NO_DEFAULT_PATH)
+if (GPD_LIB)
+  message(STATUS "Library GPD found in ${GPD_LIB}")
+else()
+  message(FATAL_ERROR "Library GPD not found")
+endif()
+include_directories(${GPD_LIB_INCLUDE_DIR})
+message(STATUS "gpd_include_dir: ${GPD_LIB_INCLUDE_DIR}")
 
+set(CMAKE_CXX_FLAGS "-O3 -fopenmp -fPIC -Wno-deprecated -Wenum-compare -Wno-ignored-attributes -std=c++14")
 
 ## Uncomment this if the package has a setup.py. This macro ensures
 ## modules and global scripts declared therein get installed
@@ -56,6 +72,8 @@ add_message_files(
   DetectedObj.msg 
   BoundingBoxCoord.msg 
   GraspServerRequest.msg
+  GraspConfig.msg 
+  GraspConfigList.msg
 )
 
 # Generate services in the 'srv' folder
@@ -63,6 +81,7 @@ add_service_files(
   FILES
   EmptySrv.srv
   object_detection.srv
+  detect_grasps.srv
 )
 
 ## Generate actions in the 'action' folder
@@ -109,11 +128,12 @@ generate_messages(
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-#  INCLUDE_DIRS include
-#  LIBRARIES perception_pepper
+ INCLUDE_DIRS include
+ LIBRARIES manipulation_pepper
 #  CATKIN_DEPENDS rospy
 #  DEPENDS system_lib
-CATKIN_DEPENDS message_runtime
+  CATKIN_DEPENDS cmake_modules eigen_conversions geometry_msgs message_runtime roscpp sensor_msgs std_msgs
+  DEPENDS PCL
 )
 
 ###########
@@ -127,11 +147,16 @@ CATKIN_DEPENDS message_runtime
 #   # /home/crossingpepper/Téléchargements/naoqi-sdk-2.5.7.1-linux64/include
 #   ${catkin_INCLUDE_DIRS}
 # )
+include_directories(include 
+  ${catkin_INCLUDE_DIRS} 
+  ${PCL_INCLUDE_DIRS}
+)
 
 ## Declare a C++ library
 # add_library(${PROJECT_NAME}
 #   src/${PROJECT_NAME}/src/*.cpp
 # )
+add_library(${PROJECT_NAME}_grasp_plotter src/grasp_plotter.cpp)
 
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
@@ -141,13 +166,14 @@ CATKIN_DEPENDS message_runtime
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
-# add_executable(${PROJECT_NAME}_node src/stwService.cpp)
+add_executable(${PROJECT_NAME}_detect_grasps_server 
+  src/grasp_detection_server.cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
 ## target back to the shorter version for ease of user use
 ## e.g. "rosrun someones_pkg node" instead of "rosrun someones_pkg someones_pkg_node"
-# set_target_properties(${PROJECT_NAME}_node PROPERTIES OUTPUT_NAME node PREFIX "")
+set_target_properties(${PROJECT_NAME}_detect_grasps_server PROPERTIES OUTPUT_NAME detect_grasps_server PREFIX "")
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
@@ -157,6 +183,16 @@ CATKIN_DEPENDS message_runtime
 # target_link_libraries(${PROJECT_NAME}_node
 #   ${catkin_LIBRARIES}
 # )
+target_link_libraries(${PROJECT_NAME}_detect_grasps_server
+                      ${PROJECT_NAME}_grasp_plotter
+                      ${GPD_LIB}
+                      ${PCL_LIBRARIES}
+                      ${catkin_LIBRARIES})
+
+
+target_link_libraries(${PROJECT_NAME}_grasp_plotter
+                      ${GPD_LIB}
+                      ${catkin_LIBRARIES})
 
 #############
 ## Install ##
