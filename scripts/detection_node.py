@@ -114,8 +114,8 @@ class ObjectPointDetection():
     
         # Init Yolo V8 model
         ## Not doing object detection for now
-        self.model = DarkNet_YCB()
-        rospy.loginfo("FINISH LOAD MODEL")
+        # self.model = DarkNet_YCB()
+        # rospy.loginfo("FINISH LOAD MODEL")
         
         self.bridge = CvBridge() # For handle cv2 image
         # For visualize processed point cloud on rviz
@@ -171,8 +171,26 @@ class ObjectPointDetection():
         
         # Bouding box coordinate: top-left and right-bottom points    
         x_start, y_start, x_end, y_end = req.x_min, req.y_min, req.x_max, req.y_max
-        # pointcloud_sub = req.pc.data
-        pointcloud_sub = rospy.wait_for_message('/points', PointCloud2)
+        depth_sub = rospy.wait_for_message('/naoqi_driver/camera/depth/image_raw', Image)
+        depth_image = self.bridge.imgmsg_to_cv2(depth_sub, "16UC1")
+        depth_img = self.crop_image([x_start, y_start, x_end, y_end], depth_image)
+        
+        cameraInfo = rospy.wait_for_message('/naoqi_driver/camera/depth/camera_info', CameraInfo)
+        # Generate point cloud from depth image4
+        ## Get camera parameter
+        cx = cameraInfo.K[2]
+        cy = cameraInfo.K[5]
+        fx = cameraInfo.K[0]
+        fy = cameraInfo.K[4]
+        
+        cropped_points = []
+        height, width = depth_img.shape[:2]
+        for v in range(height):
+            for u in range(width):
+                z = depth_image[v, u] / 1000.0 # Convert depth from millimeters to meters
+                x = (u - cx) * z / fx
+                y = (v - cy) * z / fy
+                cropped_points.append([x, y, z])
         
         # Init fields and header for pointcloud publisher
         fields = [PointField('x', 0, PointField.FLOAT32, 1),
@@ -182,21 +200,13 @@ class ObjectPointDetection():
 
         header = Header()
         header.stamp = rospy.Time.now()
-        header.frame_id = pointcloud_sub.header.frame_id
-        try:
-            # Crop pointcloud according to bounding box
-            cropped_points = self.crop_pointcloud([x_start, y_start, x_end, y_end], pointcloud_sub)
-            # Do the pointcloud segmentation
-            segmented_points = self.pointcloud_segmentation(np.array(cropped_points))
-            # Convert to pointcloud msg
-            pc_msg = pc2.create_cloud(header, fields, segmented_points)
-            
-        except Exception as e:
-            rospy.logerr(e)
-            # If error occur while cropping the recieved pointcloud,
-            ## the empty points will be sent
-            pc_msg = pc2.create_cloud(header, fields, [])            
+        header.frame_id = cameraInfo.header.frame_id
         
+        # Do the pointcloud segmentation
+        segmented_points = self.pointcloud_segmentation(np.array(cropped_points))
+        # Convert to pointcloud msg
+        pc_msg = pc2.create_cloud(header, fields, segmented_points)
+
         pc_msg = self.transform_pointcloud(pc_msg)
         self.visualize_detect_pc.publish(pc_msg)
         
@@ -269,8 +279,9 @@ class ObjectPointDetection():
             fy = cameraInfo.K[4]
             
             cropped_points = []
-            for v in range(depth_img.shape[0]):
-                for u in range(depth_img.shape[1]):
+            height, width = depth_img.shape[:2]
+            for v in range(height):
+                for u in range(width):
                     z = depth_image[v, u] / 1000.0 # Convert depth from millimeters to meters
                     x = (u - cx) * z / fx
                     y = (v - cy) * z / fy
@@ -284,7 +295,6 @@ class ObjectPointDetection():
             header = Header()
             header.stamp = rospy.Time.now()
             header.frame_id = cameraInfo.header.frame_id
-            print(header.frame_id)
 
             # Do the pointcloud segmentation
             segmented_points = self.pointcloud_segmentation(np.array(cropped_points))
@@ -297,145 +307,6 @@ class ObjectPointDetection():
         time_end = rospy.Time.now()
         duration = time_end - time_begin
         rospy.loginfo("PROCESSING TIME: " + str(duration.to_sec()) + " secs")
-    
-
-    def callback_old(self, image_sub, pointcloud_sub):
-    #     """
-    #     Apply planar extraction and clustering to extract object pointcloud
-    #         after object detection based on pointcloud and image msg.
-        
-    #     :param (ros.msg - Image) image_sub: The image msg from subcriber
-    #     :param (ros.msg - PointCloud2) poincloud_sub: The pointcloud msg from subcriber
-    #     """
-    
-    #     time_begin = rospy.Time.now()
-    #     rospy.loginfo("INSIDE CALLBACK")
-    #     rgb_image = self.bridge.imgmsg_to_cv2(image_sub, "bgr8")
-        
-    #     image, detections = self.model.detect_opencv(rgb_image.copy())
-
-    #     # cv2.imshow('Inference', image)
-    #     # cv2.waitKey(1)
-    #     print("DETECTED OBJECTS: ", detections)
-        
-        
-    #     # Only show the first object in the list for testing
-    #     if detections:
-    #         rospy.loginfo("DETECT SOMETHING")
-            
-    #         # x_start, y_start, x_end, y_end = detections[0]['coordinates']
-    #         rgb_img = self.crop_image(detections[0]['coordinates'], rgb_image)
-    #         rgb_msg = self.bridge.cv2_to_imgmsg(rgb_img, "bgr8")
-    #         self.cropped_rgb_image_pub.publish(rgb_msg)
-            
-    #         fields = [PointField('x', 0, PointField.FLOAT32, 1),
-    #                   PointField('y', 4, PointField.FLOAT32, 1),
-    #                   PointField('z', 8, PointField.FLOAT32, 1),
-    #                  ]
-
-    #         header = Header()
-    #         header.stamp = rospy.Time.now()
-    #         header.frame_id = pointcloud_sub.header.frame_id #CameraDepth_optical_frame
-
-    #         try:
-    #             # Crop pointcloud according to bounding box
-    #             cropped_points = self.crop_pointcloud(detections[0]['coordinates'], pointcloud_sub, image_sub, rgb_image)
-    #             # Do the pointcloud segmentation
-    #             segmented_points = self.pointcloud_segmentation(np.array(cropped_points))
-    #             # Convert to pointcloud msg
-    #             pc_msg = pc2.create_cloud(header, fields, segmented_points)
-                
-    #         except Exception as e:
-    #             rospy.logerr(e)
-    #             # If error occur while cropping the recieved pointcloud,
-    #             ## the empty points will be sent
-    #             pc_msg = pc2.create_cloud(header, fields, [])              
-            
-    #         pc_msg = self.transform_pointcloud(pc_msg)
-    #         self.visualize_detect_pc.publish(pc_msg)
-        
-    #     time_end = rospy.Time.now()
-    #     duration = time_end - time_begin
-    #     rospy.loginfo("PROCESSING TIME: " + str(duration.to_sec()) + " secs")
-        pass
-            
-
-    def crop_pointcloud(self, coordinates, pointcloud_sub, image_sub, image):
-        """
-        Crop pointcloud based on object bounding box coordinates
-        
-        :param (list) coordinates: The top-left and right-bottom points of bouding box
-        :param (ros.msg - PointCloud2) poincloud_sub: The pointcloud msg from subcriber
-        :return (list) cropped_points: A list of points inside the bounding box
-        """
-        
-        camera_frame = image_sub.header.frame_id
-        # map_frame = pointcloud_sub.header.frame_id
-        map_frame = "/odom"
-        
-        height, width = image.shape[:2]
-        min_x, min_y, max_x, max_y = coordinates
-        
-        listener = tf.TransformListener()
-        listener.waitForTransform(map_frame, camera_frame, rospy.Time(), rospy.Duration(1.0))
-        try:
-           (trans, rot) = listener.lookupTransform(map_frame, camera_frame, rospy.Time(0))
-        except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
-            rospy.logerr("Error In Bouding Box Transformation")
-            return
-        
-        # try:
-        #     trans = self.tf_buffer.lookup_transform(map_frame, camera_frame, rospy.Time())
-        # except (tf2_ros.LookupException, tf2_ros.ConnectivityException, tf2_ros.ExtrapolationException):
-        #     rospy.logerr("Error In Bouding Box Transformation")
-        #     return
-        
-        # print(trans)
-        # print(rot)
-        
-            
-        # Define the corners of the bounding box in homogeneous coordinates
-        # corners = np.array([[min_x, min_y],
-        #                     [max_x, max_y]])
-        # print(corners)
-
-        # Transform the corners from the camera frame to the map frame
-        # corners_map = np.dot(corners, np.array(tf.transformations.quaternion_matrix(rot))[:3, :3].T) + np.array(trans)
-
-        # Convert the corners to non-homogeneous coordinates
-        # corners_map = corners_map[:, :2]
-        # print(corners_map)
-        # points = []
-        # for i in range(min_x, max_x):
-        #     for j in range(min_y, max_y):
-        #         points.append([i, j])
-
-        # cropped_points = list(pc2.read_points(pointcloud_sub, field_names=(
-        #     "x", "y", "z"), skip_nans=True, uvs=points))
-        
-        # min_x_map, min_y_map = corners_map[0][0], corners_map[0][1]
-        # max_x_map, max_y_map = corners_map[1][0], corners_map[1][1]
-        # print("something wrong")
-        # cropped_points = []
-        # for point in pc2.read_points_list(pointcloud_sub, skip_nans=True):
-        #     # Check if the point is inside the 2D bounding box
-        #     # print(point)
-        #     # break
-        #     if min_x_map <= point[0] <= max_x_map and min_y_map <= point[1] <= max_y_map:
-        #         # Add the point to the filtered point cloud message
-        #         cropped_points.append(point)
-        
-        start_index = min_y * width + min_x
-        end_index = max_y * width + max_x
-        
-        cropped_points = list(pc2.read_points(pointcloud_sub, field_names=(
-            "x", "y", "z"), skip_nans=True))
-
-        print(f"Num points: {len(cropped_points)}")
-        print(f"start idx: {start_index}, end idx: {end_index}")
-        cropped_points = cropped_points[start_index:end_index]
-        # print(cropped_points)
-        return cropped_points
     
     
     def dbscan(self, points, eps, min_samples):
@@ -450,8 +321,8 @@ class ObjectPointDetection():
         :return (numpy.array) labels: A list of cluster lables of input pointcloud
         """
         
-        # initialize labels array with -1 to indicate noise
-        labels = np.full(len(points), -1)
+        # initialize labels array with -2 to indicate unvisited
+        labels = np.full(len(points), -2)
 
         # initialize cluster index
         cluster_index = 0
@@ -459,7 +330,7 @@ class ObjectPointDetection():
         # loop over each point in the dataset
         for i in range(len(points)):
             # check if point has already been assigned to a cluster
-            if labels[i] != -1:
+            if labels[i] != -2:
                 continue
 
             # find neighboring points within radius eps
@@ -477,12 +348,16 @@ class ObjectPointDetection():
             j = 0
             while j < len(neighbors):
                 neighbor = neighbors[j]
-                if labels[neighbor] == -1:
-                    labels[neighbor] = cluster_index
+                j += 1
+                
+                if labels[neighbor] not in [-1, -2]:
+                    continue
+                
+                labels[neighbor] = cluster_index
+                if labels[neighbor] == -2:
                     sub_neighbors = np.where(np.linalg.norm(points - points[neighbor], axis=1) < eps)[0]
                     if len(sub_neighbors) >= min_samples:
                         neighbors = np.concatenate((neighbors, sub_neighbors))
-                j += 1
 
             # move to the next cluster index
             cluster_index += 1
@@ -546,23 +421,24 @@ class ObjectPointDetection():
         :return (numpy.array) outliers: Object pointcloud after segmentation
         """
         
-        # labels = self.dbscan(points, 0.5, 10)
-        
-        # # count the number of points in each cluster
-        # cluster_counts = np.bincount(labels[labels != -1])
-
-        # # find the label of the largest cluster
-        # largest_cluster_label = np.argmax(cluster_counts)
-
-        # # extract the indices of the largest cluster
-        # largest_cluster_indices = np.where(labels == largest_cluster_label)[0]
-
-        # # extract the points in the largest cluster
-        # largest_cluster_points = points[largest_cluster_indices]
-        # return largest_cluster_points
-        
+        # Use ransac to remove planar
         outliers = self.ransac_plane(points, num_iterations=100, threshold=0.01)
-        return outliers
+        
+        print(f"Number of outlier points: {len(outliers)}")
+        # Use dbscan for clustering and keep the largest cluster
+        labels = self.dbscan(outliers, 0.008, 8)
+        print(np.unique(labels))
+        # count the number of points in each cluster
+        cluster_counts = np.bincount(labels[labels != -1])
+        # find the label of the largest cluster
+        largest_cluster_label = np.argmax(cluster_counts)
+        # extract the indices of the largest cluster
+        largest_cluster_indices = np.where(labels == largest_cluster_label)[0]
+        # extract the points in the largest cluster
+        largest_cluster_points = points[largest_cluster_indices]
+        print(f"Number of object points: {len(largest_cluster_points)}")
+        
+        return largest_cluster_points
 
 
     def transform_pointcloud(self, cloud_in):
@@ -612,5 +488,5 @@ if __name__ == "__main__":
     # 1. Continuous detection by ROS subscriber/callback (asynchronous)
     # 2. Synchronous detection via ROS Service (Server/Client-like)
 
-    obj_detection_node.continuous_node()
-    # obj_detection_node.service_node()
+    # obj_detection_node.continuous_node()
+    obj_detection_node.service_node()
