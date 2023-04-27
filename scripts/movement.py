@@ -53,39 +53,26 @@ class Movement :
 
         # RIGHT HAND
         self.joint_rhand = ["RHand"]
-        self.movegroup_rhand = moveit_commander.MoveGroupCommander("right_hand")
-        self.movegroup_rhand.set_goal_tolerance(self.tolerance)
-        self.movegroup_rhand.set_planning_time(self.planning_time)
-        self.movegroup_rhand.set_planner_id(self.planner)
 
         # LEFT ARM
         self.joint_larm = ["LShoulderPitch", "LShoulderRoll", "LElbowYaw", "LElbowRoll", "LWristYaw"]
-        self.movegroup_larm = moveit_commander.MoveGroupCommander("left_arm")
+        self.movegroup_larm = moveit_commander.MoveGroupCommander("left_arm", wait_for_servers=60.0)
         self.movegroup_larm.set_goal_tolerance(self.tolerance)
         self.movegroup_larm.set_planning_time(self.planning_time)
         self.movegroup_larm.set_planner_id(self.planner)
 
         # LEFT HAND
         self.joint_lhand = ["LHand"]
-        self.movegroup_lhand = moveit_commander.MoveGroupCommander("left_hand")
-        self.movegroup_lhand.set_goal_tolerance(self.tolerance)
-        self.movegroup_lhand.set_planning_time(self.planning_time)
-        self.movegroup_lhand.set_planner_id(self.planner)
+
+        # BOTH ARMS
+        self.joint_botharms = ["LShoulderPitch", "LShoulderRoll", "LElbowYaw", "LElbowRoll", "LWristYaw", "RShoulderPitch", "RShoulderRoll", "RElbowYaw", "RElbowRoll", "RWristYaw"]
 
         # BODY
         self.joint_upper_body = ["HeadYaw", "HeadPitch", "LShoulderPitch", "LShoulderRoll", "LElbowYaw", "LElbowRoll", "LWristYaw", "RShoulderPitch", "RShoulderRoll", "RElbowYaw", "RElbowRoll", "RWristYaw"]
         self.joint_lower_body = ["HipRoll", "HipPitch", "KneePitch"]
-        self.movegroup_lower_body = moveit_commander.MoveGroupCommander("lower_body") # Corresponds to the lower body joints
-        self.movegroup_lower_body.set_goal_tolerance(self.tolerance)
-        self.movegroup_lower_body.set_planning_time(self.planning_time)
-        self.movegroup_lower_body.set_planner_id(self.planner)
 
         # HEAD
         self.joint_head = ["HeadYaw","HeadPitch"]
-        self.movegroup_head = moveit_commander.MoveGroupCommander("head") # Corresponds to the lower body joints
-        self.movegroup_head.set_goal_tolerance(self.tolerance)
-        self.movegroup_head.set_planning_time(self.planning_time)
-        self.movegroup_head.set_planner_id(self.planner)
 
         ##################################
         # POSES
@@ -106,6 +93,19 @@ class Movement :
         self.take_bag_angles = np.deg2rad([5,-5,70,55,105])
         self.hold_bag_angles = np.deg2rad([40,-5,70,55,105])
 
+        #BOTH ARMS
+        self.pose_grab_2arms_l1 = np.deg2rad([-30,20,-2,-43,-82])
+        self.pose_grab_2arms_l2 = np.deg2rad([0,20,-2,-43,-82])
+        self.pose_grab_2arms_l3 = np.deg2rad([0,10,-2,-43,-82])
+
+        self.pose_grab_2arms_r1 = np.deg2rad([-30,-20,2,43,82])
+        self.pose_grab_2arms_r2 = np.deg2rad([0,-20,2,43,82])
+        self.pose_grab_2arms_r3 = np.deg2rad([0,-10,2,43,82])
+
+        self.pose_grab_2arms_1 = np.deg2rad([-30,20,-2,-43,-82,  #LARM
+                                             -30,-20,2,43,82,])  #RARM
+
+
         ##################################
         # STATES
         ##################################
@@ -124,6 +124,7 @@ class Movement :
         self.thread_crouch = None
         self.thread_hold_bag = None
         self.thread_hand = None
+        self.thread_hold_last_pose = None
 
     ##Destructor of a Movement object
     #@param self
@@ -133,6 +134,10 @@ class Movement :
         if self.thread_crouch != None :
             self.thread_crouch.join()
         if self.thread_hold_bag != None :
+            self.thread_hold_bag.join()
+        if self.thread_hold_last_pose != None :
+            self.thread_hold_bag.join()
+        if self.thread_hand != None :
             self.thread_hold_bag.join()
 
     ##Function to make the robot rise his hand up
@@ -195,6 +200,8 @@ class Movement :
     ##Function to put the robot in a base pose
     #@param self
     def pose_middle(self):
+        self.stop_hold_last_pose()
+
         msg = JointAnglesWithSpeed()
         msg.joint_names = self.joint_upper_body
         msg.joint_angles = self.pose_middle_angles
@@ -202,12 +209,10 @@ class Movement :
         print(f"Publishing : {msg}")
         self.pub_angles.publish(msg)
 
-        msgb = JointAnglesWithSpeed()
-        msgb.joint_names = self.joint_lower_body
-        msgb.joint_angles = self.pose_middle_angles_lbody
-        msgb.speed = 0.1
-        print(f"Publishing : {msgb}")
-        self.pub_angles.publish(msgb)
+        msg.joint_names = self.joint_lower_body
+        msg.joint_angles = self.pose_middle_angles_lbody
+        print(f"Publishing : {msg}")
+        self.pub_angles.publish(msg)
 
     ##Function to put the robot in a dialog pose
     #@param self
@@ -317,26 +322,97 @@ class Movement :
         self.holding_bag = False
         self.thread_hold_bag.join()
 
-    ##Function to make the robot hold the bag (starts a thread to maintain holding)
+    def grab_2arms(self):
+
+        table_height = 100 #cm
+        object_width = 5 #cm
+
+        # TODO: COMPUTE ShoulderPitch with table height & ShoulderRoll with object_width
+
+        spitch = 30
+        sroll = 20
+
+        # BASE POSE
+        msg = JointAnglesWithSpeed()
+        msg.joint_names = self.joint_botharms
+        msg.joint_angles = self.pose_grab_2arms_1
+        msg.speed = 0.1
+
+        rospy.loginfo(f"first msg :\n{msg}")
+        self.pub_angles.publish(msg)
+        rospy.sleep(3)
+
+        # LOWER ARMS (ShoulderPitch)
+        msg.joint_names = ["RShoulderPitch","LShoulderPitch"]
+        msg.joint_angles = np.deg2rad([spitch,spitch])
+
+        rospy.loginfo(f"second msg :\n{msg}")
+        self.pub_angles.publish(msg)
+        rospy.sleep(1)
+
+        # GRAB WITH ARMS (ShoulderRoll)
+        msg.joint_names = ["LShoulderRoll","RShoulderRoll"]
+        msg.joint_angles = np.deg2rad([sroll,-1*sroll])
+
+        rospy.loginfo(f"third msg :\n{msg}")
+        self.pub_angles.publish(msg)
+
+        msg.joint_names = self.joint_botharms
+        msg.joint_angles = self.pose_grab_2arms_1
+        [msg.joint_angles[0], msg.joint_angles[5]] = np.deg2rad([spitch, spitch])
+        [msg.joint_angles[1], msg.joint_angles[6]] = np.deg2rad([sroll, -1*sroll])
+        
+        rospy.loginfo(f"HOLD LAST POSE\n{msg}")
+        self.last_pose = msg
+
+        self.hold_last_pose()
+
+    def release_grab_2arms(self):
+        self.stop_hold_last_pose()
+        spitch = 30
+        sroll = 25
+
+        # open arms
+        msg = JointAnglesWithSpeed()
+        msg.joint_names = ["RShoulderRoll","LShoulderRoll"]
+        msg.joint_angles = np.deg2rad([-1*sroll,sroll])
+        msg.speed = 0.1
+
+        self.pub_angles.publish(msg)
+        rospy.loginfo(msg)
+        rospy.sleep(1)
+
+        # RAISE ARMS (ShoulderPitch)
+        msg.joint_names = self.joint_botharms
+        msg.joint_angles = self.pose_grab_2arms_1
+        self.pub_angles.publish(msg)
+        rospy.loginfo(msg)
+        rospy.sleep(1)
+        
+
+    ##Function to make the robot hold the last registered pose (starts a thread)
     #@param self
     def hold_last_pose(self):
         self.holding_pose = True
-        self.hold_last_pose_thread = Thread(target=self.hold_last_pose_task)
-        self.hold_last_pose_thread.start()
+        self.thread_hold_last_pose = Thread(target=self.hold_last_pose_task)
+        self.thread_hold_last_pose.start()
 
-    ##Thread to maintain the robot holding a bag
+    ##Thread to maintain the robot holding last registered pose
     #@param self
     def hold_last_pose_task(self):
-        while self.holding_pose:
-            self.pub_angles.publish(self.last_pose)
-            rospy.loginfo(self.last_pose)
-            rospy.sleep(0.5)
+        if self.last_pose != None :
+            rospy.loginfo("Holding last pose")
+            while self.holding_pose:
+                self.pub_angles.publish(self.last_pose)
+                rospy.sleep(0.5)
 
     ##Function to stop the bag holding thread
     #@param self
     def stop_hold_last_pose(self):
+        rospy.loginfo("Stopped holding last pose")
         self.holding_pose = False
-        self.hold_last_pose_thread.join()
+        if self.thread_hold_last_pose != None :
+            self.thread_hold_last_pose.join()
 
     ##Function to stop the bag holding thread
     #@param self

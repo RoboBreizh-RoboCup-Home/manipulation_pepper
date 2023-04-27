@@ -88,6 +88,8 @@ class MovementActionServer(object):
                     self.action_server.publish_feedback(MovementFeedback(feedback="holding restaurant pose"))
                     success=True
 
+                    # ADD OPEN HAND (use thumb to stabilize tray)
+
                 elif(goal.order=="stop_pose_restaurant"):
                     rospy.loginfo("Executing stop pose restaurant")
                     self.action_server.publish_feedback(MovementFeedback(feedback="stopping restaurant pose"))
@@ -146,6 +148,16 @@ class MovementActionServer(object):
                 elif(goal.order=="stop_hold_last_pose"):
                     rospy.loginfo("Executing stop hold_last_pose")
                     self.movement.stop_hold_last_pose()
+                    success=True
+
+                elif(goal.order=="grab_2arms"):
+                    rospy.loginfo("Executing grab_2arms")
+                    self.movement.grab_2arms()
+                    success=True
+
+                elif(goal.order=="release_grab_2arms"):
+                    rospy.loginfo("Executing release grab_2arms")
+                    self.movement.release_grab_2arms()
                     success=True
                 
                 elif(goal.order=="test"):
