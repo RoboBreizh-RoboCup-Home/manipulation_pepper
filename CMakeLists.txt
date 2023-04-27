@@ -191,6 +191,7 @@ catkin_install_python(PROGRAMS
   scripts/movement_server.py
   scripts/grasp_planner.py
   scripts/detection_node.py
+  scripts/talker.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
