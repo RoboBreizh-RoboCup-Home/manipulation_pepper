@@ -114,8 +114,8 @@ class ObjectPointDetection():
     
         # Init Yolo V8 model
         ## Not doing object detection for now
-        # self.model = DarkNet_YCB()
-        # rospy.loginfo("FINISH LOAD MODEL")
+        self.model = DarkNet_YCB()
+        rospy.loginfo("FINISH LOAD MODEL")
         
         self.bridge = CvBridge() # For handle cv2 image
         # For visualize processed point cloud on rviz
@@ -430,6 +430,8 @@ class ObjectPointDetection():
         print(np.unique(labels))
         # count the number of points in each cluster
         cluster_counts = np.bincount(labels[labels != -1])
+        if len(cluster_counts) == 0:
+            return outliers
         # find the label of the largest cluster
         largest_cluster_label = np.argmax(cluster_counts)
         # extract the indices of the largest cluster
@@ -488,5 +490,5 @@ if __name__ == "__main__":
     # 1. Continuous detection by ROS subscriber/callback (asynchronous)
     # 2. Synchronous detection via ROS Service (Server/Client-like)
 
-    # obj_detection_node.continuous_node()
-    obj_detection_node.service_node()
+    obj_detection_node.continuous_node()
+    # obj_detection_node.service_node()
