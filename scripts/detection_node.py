@@ -224,13 +224,9 @@ class ObjectPointDetection():
             and pointcloud segmentation at the same node 
         """
         
-        # ts = message_filters.ApproximateTimeSynchronizer(
-        #     [self.image_sub, self.pointcloud_sub], 10, 1, allow_headerless=True)
         ts = message_filters.ApproximateTimeSynchronizer(
             [self.image_sub, self.depth_sub], 10, 1, allow_headerless=True)
         ts.registerCallback(self.callback)
-
-        rospy.loginfo("Launching Detection Node")
 
         rospy.spin()
         
@@ -241,7 +237,7 @@ class ObjectPointDetection():
             after object detection based on pointcloud and image msg.
         
         :param (ros.msg - Image) image_sub: The image msg from subcriber
-        :param (ros.msg - PointCloud2) poincloud_sub: The pointcloud msg from subcriber
+        :param (ros.msg - Image) depth_sub: The depth image msg from subcriber
         """
     
         time_begin = rospy.Time.now()
