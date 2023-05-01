@@ -424,19 +424,18 @@ class ObjectPointDetection():
         # Use ransac to remove planar
         outliers = self.ransac_plane(points, num_iterations=100, threshold=0.01)
         
-        print(f"Number of outlier points: {len(outliers)}")
         # Use dbscan for clustering and keep the largest cluster
         labels = self.dbscan(outliers, 0.008, 8)
-        print(np.unique(labels))
         # count the number of points in each cluster
         cluster_counts = np.bincount(labels[labels != -1])
+        if len(cluster_counts) == 0:
+           return outliers
         # find the label of the largest cluster
         largest_cluster_label = np.argmax(cluster_counts)
         # extract the indices of the largest cluster
         largest_cluster_indices = np.where(labels == largest_cluster_label)[0]
         # extract the points in the largest cluster
         largest_cluster_points = points[largest_cluster_indices]
-        print(f"Number of object points: {len(largest_cluster_points)}")
         
         return largest_cluster_points
 
