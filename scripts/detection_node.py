@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import os
-os.environ["MODEL_PATH"] = "/home/nhan/detection_ws/src/robobreizh/scripts/models"
+os.environ["MODEL_PATH"] = "/home/gwendal/ws_qigrasping/models"
 import cv2
 import time
 import rospy
@@ -114,8 +114,8 @@ class ObjectPointDetection():
     
         # Init Yolo V8 model
         ## Not doing object detection for now
-        self.model = DarkNet_YCB()
-        rospy.loginfo("FINISH LOAD MODEL")
+        # self.model = DarkNet_YCB()
+        # rospy.loginfo("FINISH LOAD MODEL")
         
         self.bridge = CvBridge() # For handle cv2 image
         # For visualize processed point cloud on rviz
@@ -490,5 +490,5 @@ if __name__ == "__main__":
     # 1. Continuous detection by ROS subscriber/callback (asynchronous)
     # 2. Synchronous detection via ROS Service (Server/Client-like)
 
-    obj_detection_node.continuous_node()
-    # obj_detection_node.service_node()
+    #obj_detection_node.continuous_node()
+    obj_detection_node.service_node()

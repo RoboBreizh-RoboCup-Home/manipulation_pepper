@@ -1,8 +1,8 @@
 import rospy
 import time
 from sensor_msgs.msg import PointCloud2
-from manipulation_pepper.msg import MovementGoal, GraspAction, GraspServerRequest, GraspActionGoal
-from manipulation_pepper.srv import object_detection, object_detectionRequest
+from manipulation_pepper.msg import MovementGoal, GraspAction, GraspServerRequest, GraspActionGoal, BoundingBoxCoord
+from manipulation_pepper.srv import object_detection
 from gpd_ros.msg import GraspConfigList
 import actionlib
 
@@ -36,23 +36,30 @@ class GraspPlanner :
     def callback_action_server(self, goal):
         rospy.loginfo(f"action server cb with goal : {goal}")
 
-        req = object_detectionRequest()
+        req = GraspServerRequest()
+        bbox = BoundingBoxCoord()
+
         #rospy.loginfo(req)
-        req.x_min = int(goal.x_min)
-        req.x_max = int(goal.x_max)
-        req.y_min = int(goal.y_min)
-        req.y_max = int(goal.y_max)
-        req.pc = self.pcl
+        bbox.x_min = int(goal.x_min)
+        bbox.x_max = int(goal.x_max)
+        bbox.y_min = int(goal.y_min)
+        bbox.y_max = int(goal.y_max)
+        req.global_cloud = self.pcl
+        req.bounding_box = bbox
+
+        try:
+            resp = self.pointlcoud_service(goal.x_min, goal.y_min, goal.x_max, goal.y_max)
+            # resp = self.pointlcoud_service(198, 149, 307,271)
+        except rospy.ServiceException as exc:
+            print("Service did not process request: " + str(exc))
+            self.action_server.set_succeeded(False)
+            return
+
+        rospy.loginfo(f"Response from node : {resp}")
 
         # msg = PointCloud2()
-
-        resp = self.pointlcoud_service(req)
-
-        rospy.loginfo(f"Response from node : {resp.pc.header}")
-
-        msg = PointCloud2()
-        msg = resp.pc
-        self.pub_pcl.publish(msg)
+        # msg = resp.pc
+        # self.pub_pcl.publish(msg)
 
         self.action_server.set_succeeded(True)
 

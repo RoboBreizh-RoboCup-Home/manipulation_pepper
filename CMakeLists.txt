@@ -7,6 +7,8 @@ project(manipulation_pepper)
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
+find_package(OpenCV REQUIRED)
+
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   rospy
@@ -20,6 +22,7 @@ find_package(catkin REQUIRED COMPONENTS
   cmake_modules
   eigen_conversions
   tf
+  cv_bridge
 )
 
 find_package(PCL 1.8 REQUIRED)

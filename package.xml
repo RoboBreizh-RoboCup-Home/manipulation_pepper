@@ -86,6 +86,10 @@
   <build_depend>tf2_sensor_msgs</build_depend>
 	<build_export_depend>tf2_sensor_msgs</build_export_depend>
 	<exec_depend>tf2_sensor_msgs</exec_depend>
+
+  <build_depend>opencv2</build_depend>
+	<build_export_depend>opencv2</build_export_depend>
+	<exec_depend>opencv2</exec_depend>
   
 
 	<!-- <build_depend>libqi</build_depend>

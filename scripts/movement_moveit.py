@@ -1,13 +1,16 @@
-from naoqi_bridge_msgs.msg import JointAnglesWithSpeed
+from actionlib import SimpleActionClient
+from naoqi_bridge_msgs.msg import JointTrajectoryAction, JointAnglesWithSpeed
 from geometry_msgs.msg import Twist
 import numpy as np
 from threading import Thread
 import rospy
 import time
+import moveit_commander
+import sys
 
 ## Movement class contains all variables and functions for the movements of the Pepper robot
 
-class Movement :
+class MovementMoveit :
 
     ##Constructor of the Movement class
     #Initialise multiple attributes which are set by default
@@ -28,14 +31,33 @@ class Movement :
         while self.pub_turn.get_num_connections()!=0 or self.pub_angles.get_num_connections()!=0 :
             pass
         
+        ##################################
+        # MOVEIT
+        ##################################
+
+        self.tolerance = 0.0001
+        self.planning_time = 5
+        self.planner = "RRTConnectkConfigDefault"
+        moveit_commander.roscpp_initialize(sys.argv)
+        self.robot = moveit_commander.RobotCommander()
+        self.scene = moveit_commander.PlanningSceneInterface()
+
         # RIGHT ARM
         self.joint_rarm = ["RShoulderPitch", "RShoulderRoll", "RElbowYaw", "RElbowRoll", "RWristYaw"]
+        self.movegroup_rarm = moveit_commander.MoveGroupCommander("right_arm", wait_for_servers=60.0)
+        self.movegroup_rarm.set_goal_tolerance(self.tolerance)
+        self.movegroup_rarm.set_planning_time(self.planning_time)
+        self.movegroup_rarm.set_planner_id(self.planner)
 
         # RIGHT HAND
         self.joint_rhand = ["RHand"]
 
         # LEFT ARM
         self.joint_larm = ["LShoulderPitch", "LShoulderRoll", "LElbowYaw", "LElbowRoll", "LWristYaw"]
+        self.movegroup_larm = moveit_commander.MoveGroupCommander("left_arm", wait_for_servers=60.0)
+        self.movegroup_larm.set_goal_tolerance(self.tolerance)
+        self.movegroup_larm.set_planning_time(self.planning_time)
+        self.movegroup_larm.set_planner_id(self.planner)
 
         # LEFT HAND
         self.joint_lhand = ["LHand"]
@@ -79,7 +101,7 @@ class Movement :
         self.pose_grab_2arms_r3 = np.deg2rad([0,-10,2,43,82])
 
         self.pose_grab_2arms_1 = np.deg2rad([-30,20,-2,-43,-82,  #LARM
-                                             -30,-20,2,43,82])   #RARM
+                                             -30,-20,2,43,82])  #RARM
 
 
         ##################################
@@ -389,6 +411,32 @@ class Movement :
         self.holding_pose = False
         if self.thread_hold_last_pose != None :
             self.thread_hold_last_pose.join()
+
+    ##Function to stop the bag holding thread
+    #@param self
+    #@param plan
+    def execute_plan(self, plan):
+        msg = JointAnglesWithSpeed()
+        msg.joint_names = plan.joint_trajectory.joint_names
+        msg.speed = 0.8
+
+        rospy.loginfo(f"Executing plan on joints : {plan.joint_trajectory.joint_names}")
+
+        previous_time = plan.joint_trajectory.points[0].time_from_start.nsecs
+
+        if(len(plan.joint_trajectory.points)>2):
+            for p in plan.joint_trajectory.points:
+                current_time = p.time_from_start.secs + p.time_from_start.nsecs*1.0e-9
+                msg.joint_angles = p.positions
+                rospy.loginfo(f"Sending pos : {p.positions}")
+                rospy.loginfo(f"Sleep : {current_time-previous_time}")
+                self.pub_angles.publish(msg)
+                self.last_pose = msg
+                #rospy.sleep(current_time-previous_time)
+                #rospy.sleep(0.1)
+                previous_time = current_time
+            return True
+        return False
     
     ##Function to stop all threads.
     #@param self
@@ -407,3 +455,77 @@ class Movement :
         if self.holding_pose_restaurant:
             self.holding_pose_restaurant = False
             self.thread_pose_restaurant.join()
+
+    ##Function to plan a movement by giving target joint values
+    #@param self
+    def plan_joints(self):
+        begin_time = rospy.get_time()
+        self.movegroup_rarm.set_start_state_to_current_state()
+        joint_goal = self.movegroup_rarm.get_current_joint_values()
+        joint_goal[0] = np.deg2rad(30)
+        self.movegroup_rarm.set_joint_value_target(joint_goal)
+        plan = self.movegroup_rarm.plan()
+        end_time = rospy.get_time()
+        rospy.loginfo(f"Planning done in {end_time-begin_time}s")
+        return plan
+
+    ##Function to plan a movement by giving target joint values
+    #@param self
+    #@param pose [x, y, z, rot_x, rot_y, rot_z] or [x, y, z, qx, qy, qz, qw] 
+    def plan_6d_pose(self,pose):
+        rospy.loginfo(f"Going to pose :{pose}")
+        begin_time = rospy.get_time()
+        self.movegroup_rarm.set_start_state_to_current_state()
+        self.movegroup_rarm.set_pose_target(pose, end_effector_link ='r_wrist')
+        plan = self.movegroup_rarm.plan()
+        end_time = rospy.get_time()
+        rospy.loginfo(f"Planning done in {end_time-begin_time}s")
+        return plan
+    
+    ##Function to plan a movement by giving target position (xyz)
+    #@param self
+    #@param xyz
+    def plan_xyz_position(self, xyz):
+        begin_time = rospy.get_time()
+        self.movegroup_rarm.set_start_state_to_current_state()
+        self.movegroup_rarm.set_position_target(xyz, end_effector_link ='r_wrist')
+        self.movegroup_rarm.allow_replanning(True)
+        plan = self.movegroup_rarm.plan()
+        end_time = rospy.get_time()
+        rospy.loginfo(f"Planning done in {end_time-begin_time}s")
+        return plan
+    
+    ##Function to plan a movement by giving target orientation (rpy)
+    #@param self
+    #@param rpy
+    def plan_rpy_orientation(self, rpy):
+        begin_time = rospy.get_time()
+        self.movegroup_rarm.set_start_state_to_current_state()
+        self.movegroup_rarm.set_rpy_target(rpy, end_effector_link ='r_wrist')
+        plan = self.movegroup_rarm.plan()
+        end_time = rospy.get_time()
+        rospy.loginfo(f"Planning done in {end_time-begin_time}s")
+        return plan
+    
+    ##Function to plan a movement by giving target quaternion
+    #@param self
+    #@param q
+    def plan_q_orientation(self, q):
+        begin_time = rospy.get_time()
+        self.movegroup_rarm.set_start_state_to_current_state()
+        self.movegroup_rarm.set_orientation_target(q, end_effector_link ='r_wrist')
+        plan = self.movegroup_rarm.plan()
+        end_time = rospy.get_time()
+        rospy.loginfo(f"Planning done in {end_time-begin_time}s")
+        return plan
+    
+    ##Debug infos
+    #@param self
+    def info(self):
+        rospy.loginfo("######## INFO ########")
+        rospy.loginfo(f"Planning frame : {self.movegroup_rarm.get_planning_frame()}")
+        rospy.loginfo(f"Current pose : {self.movegroup_rarm.get_current_pose()}")
+        rospy.loginfo(f"end_effector_link : {self.movegroup_rarm.get_end_effector_link()}")
+        rospy.loginfo(f"joints : {self.movegroup_rarm.get_joints()}")
+        rospy.loginfo(f"active joints : {self.movegroup_rarm.get_active_joints()}")
+
