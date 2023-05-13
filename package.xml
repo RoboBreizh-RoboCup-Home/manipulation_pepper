@@ -63,6 +63,7 @@
 
   <depend>naoqi_libqi</depend>
   <depend>naoqi_libqicore</depend>
+  <depend>robobreiznh_msgs</depend>
 
 	<build_depend>naoqi_bridge_msgs</build_depend>
 	<build_export_depend>naoqi_bridge_msgs</build_export_depend>
