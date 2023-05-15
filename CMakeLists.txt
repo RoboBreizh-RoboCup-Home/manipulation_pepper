@@ -182,6 +182,7 @@ catkin_install_python(PROGRAMS
   scripts/point_to_position.py
   scripts/detection_node.py
   scripts/talker.py
+  scripts/segment_test.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
