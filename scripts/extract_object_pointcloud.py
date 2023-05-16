@@ -7,7 +7,7 @@ import numpy as np
 from cv_bridge import CvBridge
 import sensor_msgs.point_cloud2 as pc2
 from std_msgs.msg import Header
-from sensor_msgs.msg import Image, PointField, CameraInfo
+from sensor_msgs.msg import PointCloud2, Image, PointField, CameraInfo
 
 import tf2_ros
 import tf2_py as tf2
@@ -21,39 +21,33 @@ class ExtractObjectPoints():
     A class used to detect object pointcloud.
     """
     
-    def __init__(self):
-        """
-        Init node for object point cloud detection.
-        Init the publishers, subcribers and necessary functions for pointcloud segmentation
-        """
-        
-        rospy.loginfo("INIT NODE")
-        rospy.init_node('pointcloud_processing_node', anonymous=False)
-        
+    def __init__(self, VISUAL): 
+        self.VISUAL = VISUAL
         self.bridge = CvBridge() # For handle cv2 image
         # For visualize processed point cloud on rviz
         self.tf_buffer = tf2_ros.Buffer(cache_time=rospy.Duration(12)) 
         
         
         # PUBLISHERS
-        # self.visualize_detect_pc = rospy.Publisher(
-        #     '/visualize_pointcloud', PointCloud2, queue_size=10)
-        
-        rospy.loginfo("FINISH INIT")
+        if self.VISUAL:
+            self.visualize_detect_pc = rospy.Publisher(
+                '/visualize_pointcloud', PointCloud2, queue_size=10)
+            
+        self.initExtractObjectPointsService()
 
 
-    def service_node(self):
+    def initExtractObjectPointsService(self):
         """
         Service node for object pointcloud extraction
         """
         
-        s = rospy.Service('object_pc_detection', object_detection,
-                          self.handle_pointcloud)
-        rospy.loginfo("Object Pointcloud Extraction Service Node: Waiting for Request...")
+        rospy.Service('/robobreizh/manipulation_pepper/extract_object_pointcloud', 
+                          object_detection,self.handle_ServiceObjectPointcloud)
+        rospy.loginfo("Starting Object Pointcloud Extraction: Waiting for Request...")
         rospy.spin()
 
 
-    def handle_pointcloud(self, req):
+    def handle_ServiceObjectPointcloud(self, req):
         """
         Extract object pointcloud from depth image using 
             object mask and bounding box coordinates.
@@ -113,7 +107,8 @@ class ExtractObjectPoints():
         # Convert to pointcloud msg
         pc_msg = pc2.create_cloud(header, fields, points)
         pc_msg = self.transform_pointcloud(pc_msg) # Transform to points to match camera frame
-        # self.visualize_detect_pc.publish(pc_msg)
+        if self.VISUAL:
+            self.visualize_detect_pc.publish(pc_msg)
         
         # Calculate processing time 
         time_end = rospy.Time.now()
@@ -149,5 +144,6 @@ class ExtractObjectPoints():
 
 
 if __name__ == "__main__":
-    obj_detection_node = ExtractObjectPoints()
-    obj_detection_node.service_node()
+    VISUAL = rospy.get_param('~visualize')
+    rospy.init_node('pointcloud_processing_node', anonymous=True)
+    ExtractObjectPoints(VISUAL)
