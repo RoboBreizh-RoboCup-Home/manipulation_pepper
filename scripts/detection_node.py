@@ -26,6 +26,7 @@ from manipulation_pepper.srv import object_detection
 
 
 from yolov8 import YOLOv8
+from yolov8.yolov8_seg import YOLOSeg
 from yolov8.utils import draw_bounding_box_opencv
 from yolov8.utils import class_names as CLASSES
 
@@ -115,7 +116,9 @@ class ObjectPointDetection():
         # Init Yolo V8 model
         ## Not doing object detection for now
         # self.model = DarkNet_YCB()
-        # rospy.loginfo("FINISH LOAD MODEL")
+        model_path = "/home/nhan/detection_ws/src/manipulation_pepper/scripts/segment.onnx"
+        self.model = YOLOSeg(model_path)
+        rospy.loginfo("FINISH LOAD MODEL")
         
         self.bridge = CvBridge() # For handle cv2 image
         # For visualize processed point cloud on rviz
@@ -139,8 +142,8 @@ class ObjectPointDetection():
             '/naoqi_driver/camera/front/image_raw', Image)
         self.depth_sub = message_filters.Subscriber(
             '/naoqi_driver/camera/depth/image_raw', Image)
-        self.pointcloud_sub = message_filters.Subscriber(
-            '/points', PointCloud2)
+        # self.pointcloud_sub = message_filters.Subscriber(
+        #     '/points', PointCloud2)
         
         rospy.loginfo("FINISH INIT")
 
@@ -223,9 +226,9 @@ class ObjectPointDetection():
         Publishing node for testing object detection 
             and pointcloud segmentation at the same node 
         """
-        
+        rospy.Rate(10)
         ts = message_filters.ApproximateTimeSynchronizer(
-            [self.image_sub, self.depth_sub], 10, 1, allow_headerless=True)
+            [self.image_sub, self.depth_sub], 1, 1, allow_headerless=True)
         ts.registerCallback(self.callback)
 
         rospy.spin()
@@ -244,27 +247,39 @@ class ObjectPointDetection():
         rospy.loginfo("INSIDE CALLBACK")
         rgb_image = self.bridge.imgmsg_to_cv2(image_sub, "bgr8")
         depth_image = self.bridge.imgmsg_to_cv2(depth_sub, "16UC1")
+
+        # cv2.imwrite("rgb_image.png", rgb_image)
+        # cv2.imwrite("depth_image.png", depth_image)
+        # rospy.loginfo("FINISH SAVE IMAGES")
         
-        image, detections = self.model.detect_opencv(rgb_image.copy())
+        # image, detections = self.model.detect_opencv(rgb_image.copy())
+        boxes, scores, class_ids, mask_maps = self.model(rgb_image.copy())
 
         # cv2.imshow('Inference', image)
         # cv2.waitKey(1)
-        print("DETECTED OBJECTS: ", detections)
+        print("DETECTED OBJECTS: ", class_ids)
         
         
         # Only show the first object in the list for testing
-        if detections:
+        if len(boxes) != 0:
             rospy.loginfo("DETECT SOMETHING")
             
             # x_start, y_start, x_end, y_end = detections[0]['coordinates']
-            rgb_img = self.crop_image(detections[0]['coordinates'], rgb_image)
-            depth_img = self.crop_image(detections[0]['coordinates'], depth_image)
+            # rgb_img = self.crop_image(boxes[0].astype(int), rgb_image)
+            # depth_img = self.crop_image(boxes[0].astype(int), depth_image)
             
-            rgb_msg = self.bridge.cv2_to_imgmsg(rgb_img, "bgr8")
-            depth_msg = self.bridge.cv2_to_imgmsg(depth_img, "16UC1")
-            self.cropped_rgb_image_pub.publish(rgb_msg)
-            self.cropped_depth_image_pub.publish(depth_msg)
+            # rgb_msg = self.bridge.cv2_to_imgmsg(rgb_img, "bgr8")
+            # depth_msg = self.bridge.cv2_to_imgmsg(depth_img, "16UC1")
+            # self.cropped_rgb_image_pub.publish(rgb_msg)
+            # self.cropped_depth_image_pub.publish(depth_msg)
             
+            # Apply mask to get object part
+            x1, y1, x2, y2 = boxes[0].astype(int)
+            crop_mask = mask_maps[0][y1:y2, x1:x2] == 1
+            crop_mask_img = depth_image[y1:y2, x1:x2]
+            crop_mask_img = crop_mask_img * crop_mask
+            
+            self.cropped_depth_image_pub.publish(self.bridge.cv2_to_imgmsg(crop_mask_img, "16UC1"))
             
             cameraInfo = rospy.wait_for_message('/naoqi_driver/camera/depth/camera_info', CameraInfo)
             # Generate point cloud from depth image4
@@ -275,10 +290,12 @@ class ObjectPointDetection():
             fy = cameraInfo.K[4]
             
             cropped_points = []
-            height, width = depth_img.shape[:2]
+            height, width = depth_image.shape[:2]
+            new_depth_img = np.zeros((height, width))
+            new_depth_img[y1:y2, x1:x2] = crop_mask_img
             for v in range(height):
                 for u in range(width):
-                    z = depth_image[v, u] / 1000.0 # Convert depth from millimeters to meters
+                    z = new_depth_img[v, u] / 1000.0 # Convert depth from millimeters to meters
                     x = (u - cx) * z / fx
                     y = (v - cy) * z / fy
                     cropped_points.append([x, y, z])
@@ -293,9 +310,9 @@ class ObjectPointDetection():
             header.frame_id = cameraInfo.header.frame_id
 
             # Do the pointcloud segmentation
-            segmented_points = self.pointcloud_segmentation(np.array(cropped_points))
+            # segmented_points = self.pointcloud_segmentation(np.array(cropped_points))
             # Convert to pointcloud msg
-            pc_msg = pc2.create_cloud(header, fields, segmented_points)
+            pc_msg = pc2.create_cloud(header, fields, cropped_points)
     
             pc_msg = self.transform_pointcloud(pc_msg)
             self.visualize_detect_pc.publish(pc_msg)
@@ -483,5 +500,5 @@ if __name__ == "__main__":
     # 1. Continuous detection by ROS subscriber/callback (asynchronous)
     # 2. Synchronous detection via ROS Service (Server/Client-like)
 
-    # obj_detection_node.continuous_node()
-    obj_detection_node.service_node()
+    obj_detection_node.continuous_node()
+    # obj_detection_node.service_node()
