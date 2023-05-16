@@ -1,8 +1,6 @@
 # Bouding box coordinate: top-left and right-bottom points
-int32 x_min
-int32 y_min
-int32 x_max
-int32 y_max
+BoundingBox bounding_box
+std_msgs/Int32MultiArray object_mask
 ---
 # Object point cloud
-sensor_msgs/PointCloud2 pc
+sensor_msgs/PointCloud2 object_pc

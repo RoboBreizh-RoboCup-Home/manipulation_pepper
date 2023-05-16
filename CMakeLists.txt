@@ -52,10 +52,9 @@ catkin_python_setup()
 
 ## Generate messages in the 'msg' folder
 add_message_files(
-  FILES
-  DetectedObj.msg 
-  BoundingBoxCoord.msg 
-  GraspServerRequest.msg
+  FILES 
+  BoundingBox.msg 
+  XYPoint.msg
 )
 
 # Generate services in the 'srv' folder
@@ -180,9 +179,7 @@ catkin_install_python(PROGRAMS
   scripts/look_above_wall.py
   scripts/look_up.py
   scripts/point_to_position.py
-  scripts/detection_node.py
-  scripts/talker.py
-  scripts/segment_test.py
+  scripts/extract_object_pointcloud.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
