@@ -6,5 +6,17 @@
     <node pkg="manipulation_pepper" type="look_above_wall.py" name="look_above_wall" output="screen"/>
     <node pkg="manipulation_pepper" type="look_down_stickler.py" name="look_down_stickler" output="screen"/>
     <node pkg="manipulation_pepper" type="point_to_position.py" name="point_in_front" output="screen"/>
+    
     <node pkg="manipulation_pepper" type="movement_server.py" name="movement_server" output="screen"/>
+
+    <node pkg="manipulation_pepper" type="detect_grasps_server" name="detect_grasps_server" output="screen"/>
+
+    <node pkg="nodelet" type="nodelet" name="nodelet_manager" args="manager" />
+
+    <node pkg="nodelet" type="nodelet" name="pcl_nodelet"
+            args="load depth_image_proc/point_cloud_xyz nodelet_manager">
+        <remap from="camera_info" to="/naoqi_driver/camera/depth/camera_info"/>
+        <remap from="image_rect" to="/naoqi_driver/camera/depth/image_raw"/>
+        <!-- <remap from="points" to="/camera/depth/points"/> -->
+    </node>
 </launch>
