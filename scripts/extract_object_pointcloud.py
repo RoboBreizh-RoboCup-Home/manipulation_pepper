@@ -144,6 +144,7 @@ class ExtractObjectPoints():
 
 
 if __name__ == "__main__":
-    VISUAL = rospy.get_param('~visualize')
+    
     rospy.init_node('pointcloud_processing_node', anonymous=True)
-    ExtractObjectPoints(VISUAL)
+    VISUAL = rospy.get_param('~visualize')
+    ExtractObjectPoints(VISUAL=VISUAL)
