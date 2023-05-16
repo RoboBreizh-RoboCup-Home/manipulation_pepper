@@ -78,8 +78,8 @@ class Movement :
         self.pose_grab_2arms_r2 = np.deg2rad([0,-20,2,43,82])
         self.pose_grab_2arms_r3 = np.deg2rad([0,-10,2,43,82])
 
-        self.pose_grab_2arms_1 = np.deg2rad([-30,20,-2,-43,-82,  #LARM
-                                             -30,-20,2,43,82])   #RARM
+        self.pose_grab_2arms_1 = np.deg2rad([-30,20,0,-45,-82,  #LARM
+                                             -30,-20,0,45,82])   #RARM
 
 
         ##################################
@@ -105,16 +105,7 @@ class Movement :
     ##Destructor of a Movement object
     #@param self
     def __del__(self):
-        if self.thread_pose_restaurant:
-            self.thread_pose_restaurant.join()
-        if self.thread_crouch:
-            self.thread_crouch.join()
-        if self.thread_hold_bag:
-            self.thread_hold_bag.join()
-        if self.thread_hold_last_pose:
-            self.thread_hold_bag.join()
-        if self.thread_hand:
-            self.thread_hold_bag.join()
+        self.stop()
 
     ##Function to make the robot rise his hand up
     #@param self
@@ -176,7 +167,8 @@ class Movement :
     ##Function to put the robot in a base pose
     #@param self
     def pose_middle(self):
-        self.stop_hold_last_pose()
+        self.stop()
+        self.set_hand(0.5)
 
         msg = JointAnglesWithSpeed()
         msg.joint_names = self.joint_upper_body
@@ -193,6 +185,7 @@ class Movement :
     ##Function to put the robot in a dialog pose
     #@param self
     def pose_dialog(self):
+        self.stop()
         msg = JointAnglesWithSpeed()
         msg.joint_names = self.joint_upper_body
         msg.joint_angles = self.pose_dialog_angles
@@ -224,6 +217,7 @@ class Movement :
     ##Function to set the robot in a restaurant pose (starts a thread to maintain the pose)
     #@param self
     def pose_restaurant(self):
+        self.stop()
         self.holding_pose_restaurant = True
         self.thread_pose_restaurant = Thread(target=self.pose_restaurant_task)
         self.thread_pose_restaurant.start()
@@ -298,15 +292,13 @@ class Movement :
         self.holding_bag = False
         self.thread_hold_bag.join()
 
-    def grab_2arms(self):
+    def grab_2arms(self,table_height=75,object_width=5):
+        self.stop()
+        
+        spitch = -1.026*table_height+92.31
+        sroll = 0.024*object_width**2 + 0.310*object_width + 7.9
 
-        table_height = 100 #cm
-        object_width = 5 #cm
-
-        # TODO: COMPUTE ShoulderPitch with table height & ShoulderRoll with object_width
-
-        spitch = 30
-        sroll = 20
+        # reculer?
 
         # BASE POSE
         msg = JointAnglesWithSpeed()
@@ -317,6 +309,11 @@ class Movement :
         rospy.loginfo(f"first msg :\n{msg}")
         self.pub_angles.publish(msg)
         rospy.sleep(3)
+
+        # GO TOWARDS OBJECT
+        # msg_twist = Twist()
+        # msg_twist.linear.x = 0.2
+        # self.pub_turn(msg_twist)
 
         # LOWER ARMS (ShoulderPitch)
         msg.joint_names = ["RShoulderPitch","LShoulderPitch"]

@@ -13,8 +13,8 @@ class GraspPlanner :
         self.action_server = actionlib.SimpleActionServer("GraspPlanner", GraspAction, execute_cb=self.callback_action_server, auto_start = False)
         self.action_server.start()
         
-        self.sub_pcl = rospy.Subscriber("/points", PointCloud2, self.callback_pcl) # /cloud_pcd
-        self.sub_grasp = rospy.Subscriber("/detect_grasps/clustered_grasps", GraspConfigList, self.callback_grasp) # /detect_grasps/plot_grasps
+        self.sub_pcl = rospy.Subscriber("/points", PointCloud2, self.callback_pcl) # /cloud_pcd # From nodelet
+        self.sub_grasp = rospy.Subscriber("/detect_grasps/clustered_grasps", GraspConfigList, self.callback_grasp) # /detect_grasps/plot_grasps # From detect_grasps_server
 
         self.pub_movement = rospy.Publisher("/Movement/goal", MovementGoal, queue_size=10)
         self.pub_pcl = rospy.Publisher("/cloud_stitched", PointCloud2, queue_size=10)
@@ -24,6 +24,8 @@ class GraspPlanner :
 
         self.pcl = None
 
+        rospy.loginfo("[ grasp planner ] - INIT DONE")
+
     def callback_pcl(self,data):
         #rospy.loginfo(f"cb pointcloud")
         self.pcl = data
@@ -32,6 +34,8 @@ class GraspPlanner :
         rospy.loginfo(f"cb grasp : {data}")
         msg = MovementGoal()
         msg.order = "plan_6d"
+
+        #send msg
 
     def callback_action_server(self, goal):
         rospy.loginfo(f"action server cb with goal : {goal}")
