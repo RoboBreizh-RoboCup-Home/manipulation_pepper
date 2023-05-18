@@ -69,6 +69,9 @@ class Movement :
         self.take_bag_angles = np.deg2rad([5,-5,70,55,105])
         self.hold_bag_angles = np.deg2rad([40,-5,70,55,105])
 
+        self.bag_angles_1 = np.deg2rad([83,-18,76,74,105])
+        self.bag_angles_2 = np.deg2rad([31,-13,75,24,105])
+
         #BOTH ARMS
         self.pose_grab_2arms_l1 = np.deg2rad([-30,20,-2,-43,-82])
         self.pose_grab_2arms_l2 = np.deg2rad([0,20,-2,-43,-82])
@@ -276,6 +279,22 @@ class Movement :
         self.thread_hold_bag = Thread(target=self.crouch_task)
         self.thread_hold_bag.start()
 
+    def grab_bag(self):
+        msg = JointAnglesWithSpeed()
+        msg.joint_names = self.joint_rarm
+        msg.joint_angles = self.bag_angles_1
+        msg.speed = 0.1
+
+        rospy.sleep(1)
+
+        msg = JointAnglesWithSpeed()
+        msg.joint_names = self.joint_rarm
+        msg.joint_angles = self.bag_angles_1
+        msg.speed = 0.1
+
+        self.last_pose = msg
+        self.hold_last_pose()
+
     ##Thread to maintain the robot holding a bag
     #@param self
     def hold_bag_task(self):
@@ -311,9 +330,9 @@ class Movement :
         rospy.sleep(3)
 
         # GO TOWARDS OBJECT
-        # msg_twist = Twist()
-        # msg_twist.linear.x = 0.2
-        # self.pub_turn(msg_twist)
+        msg_twist = Twist()
+        msg_twist.linear.x = 0.2
+        self.pub_turn(msg_twist)
 
         # LOWER ARMS (ShoulderPitch)
         msg.joint_names = ["RShoulderPitch","LShoulderPitch"]
@@ -342,7 +361,6 @@ class Movement :
 
     def release_grab_2arms(self):
         self.stop_hold_last_pose()
-        spitch = 30
         sroll = 25
 
         # open arms

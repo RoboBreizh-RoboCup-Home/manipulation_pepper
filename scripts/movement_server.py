@@ -74,14 +74,15 @@ class MovementActionServer(object):
 
                 elif(goal.order=="grab_bag"):
                     rospy.loginfo("Executing grab bag")
-                    #self.movement.crouch()
-                    self.movement.straight_arm()
-                    rospy.sleep(1)
-                    self.movement.hold_bag()
+                    self.movement.grab_bag()
+                    # self.movement.crouch()
+                    # self.movement.straight_arm()
+                    # rospy.sleep(1)
+                    # self.movement.hold_bag()
                     success=True
 
                 elif(goal.order=="put_down_bag"):
-                    rospy.loginfo("Executing grab bag")
+                    rospy.loginfo("Executing put down bag")
                     self.movement.crouch()
                     self.movement.stop_hold_bag()
                     self.movement.straight_arm()
