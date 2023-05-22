@@ -33,10 +33,10 @@ class ExtractObjectPoints():
             self.visualize_detect_pc = rospy.Publisher(
                 '/visualize_pointcloud', PointCloud2, queue_size=10)
             
-        self.initExtractObjectPointsService()
+        self.init_service()
 
 
-    def initExtractObjectPointsService(self):
+    def init_service(self):
         """
         Service node for object pointcloud extraction
         """
@@ -47,7 +47,7 @@ class ExtractObjectPoints():
         rospy.spin()
 
 
-    def handle_ServiceObjectPointcloud(self, req):
+    def handle_service(self, req):
         """
         Extract object pointcloud from depth image using 
             object mask and bounding box coordinates.
