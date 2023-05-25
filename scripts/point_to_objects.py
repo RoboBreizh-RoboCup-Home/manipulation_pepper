@@ -3,7 +3,9 @@ import qi
 import sys
 import math
 import rospy
-from manipulation_pepper.srv import EmptySrv,EmptySrvResponse
+
+#import ros msg and srv
+from robobreizh_msgs.srv import PointToObject
 
 class PointToObject():
     def __init__(self, app):
@@ -12,7 +14,7 @@ class PointToObject():
         self.motion_service = session.service("ALMotion")
         self.motion_service.setStiffnesses("Head", 1.0)
         rospy.init_node('pointObjectPosition')
-        rospy.Service('/robobreizh/manipulation/pointObjectPosition', EmptySrv, self.animate)
+        rospy.Service('/robobreizh/manipulation/pointObjectPosition', PointToObject, self.animate)
         rospy.spin()
         
     def arrDegreeToRad(self,angles:list):
@@ -21,13 +23,19 @@ class PointToObject():
             res.append(math.radians(angle))
         return res
 
-    def animate(self,req):
-
+    def animate(self,PointToObject):
+        
+        distance = PointToObject.distance
+        
+        obj_yaw_angle = PointToObject.yaw_angle
+        
+        rospy.loginfo("Yaw Angle: " + str(obj_yaw_angle))
+                
         # Example showing multiple trajectories
         names = ["RShoulderPitch","RShoulderRoll","RElbowYaw","RElbowRoll","RWristYaw"]
 
         RShoulderPitchAngleLists = self.arrDegreeToRad([0.0]) # -119.5 / 119.5
-        RShoulderRollAngleLists = self.arrDegreeToRad([0.0]) # -89.5 / -0.5
+        RShoulderRollAngleLists = self.arrDegreeToRad([obj_yaw_angle]) # -89.5 / -0.5
         RElbowYawAngleLists = self.arrDegreeToRad([0.0]) # -119.5 / 119.5
         RElbowRollAngleLists = self.arrDegreeToRad([0.0]) # 0.5 / -89.5
         RWristYawAngleLists = self.arrDegreeToRad([90.0]) # -104.5 / 104.5
@@ -62,5 +70,5 @@ if __name__ == "__main__":
         print("Can't connect to Naoqi at ip \"" + ip + "\" on port " + str(port) + ".\n"
               "Please check your script arguments. Run with -h option for help.")
         sys.exit(1)
-    motion = Motion(app)
+    motion = PointToObject(app)
 
