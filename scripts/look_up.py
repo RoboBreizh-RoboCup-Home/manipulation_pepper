@@ -18,7 +18,7 @@ class Motion():
 
         # Example showing multiple trajectories
         names      = ["HeadPitch","HeadYaw"]
-        angleHeadPitch = math.radians(-30.0)
+        angleHeadPitch = math.radians(-15.0)
         pitchAngleLists = [angleHeadPitch]
         angleLists = [pitchAngleLists,[0.0]]
 
