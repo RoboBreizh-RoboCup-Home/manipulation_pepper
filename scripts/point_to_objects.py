@@ -34,8 +34,9 @@ class PointToObject():
 
         angle = math.sin(point_z/distance)
         
-        
-        rospy.loginfo("Yaw Angle: " + str(angle))
+        rospy.loginfo("Distance - Chair :" + str(distance))
+        rospy.loginfo("Point z - Chair :" + str(point_z))
+        rospy.loginfo("Angle - Chair :" + str(angle))
                 
         # Example showing multiple trajectories
         names = ["RShoulderPitch","RShoulderRoll","RElbowYaw","RElbowRoll","RWristYaw"]
