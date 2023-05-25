@@ -28,15 +28,20 @@ class PointToObject():
         
         distance = PointToObject.distance
         
-        obj_yaw_angle = PointToObject.yaw_angle
+        point_x = PointToObject.point_x
+        point_y = PointToObject.point_y
+        point_z = PointToObject.point_z
+
+        angle = math.sin(point_z/distance)
         
-        rospy.loginfo("Yaw Angle: " + str(obj_yaw_angle))
+        
+        rospy.loginfo("Yaw Angle: " + str(angle))
                 
         # Example showing multiple trajectories
         names = ["RShoulderPitch","RShoulderRoll","RElbowYaw","RElbowRoll","RWristYaw"]
 
         RShoulderPitchAngleLists = self.arrDegreeToRad([0.0]) # -119.5 / 119.5
-        RShoulderRollAngleLists = self.arrDegreeToRad([obj_yaw_angle]) # -89.5 / -0.5
+        RShoulderRollAngleLists = self.arrDegreeToRad([float(angle)]) # -89.5 / -0.5
         RElbowYawAngleLists = self.arrDegreeToRad([0.0]) # -119.5 / 119.5
         RElbowRollAngleLists = self.arrDegreeToRad([0.0]) # 0.5 / -89.5
         RWristYawAngleLists = self.arrDegreeToRad([90.0]) # -104.5 / 104.5
