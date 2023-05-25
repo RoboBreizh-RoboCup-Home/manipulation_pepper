@@ -6,6 +6,7 @@ import rospy
 
 #import ros msg and srv
 from robobreizh_msgs.srv import PointToObject
+from manipulation_pepper.srv import EmptySrvResponse
 
 class PointToObject():
     def __init__(self, app):
