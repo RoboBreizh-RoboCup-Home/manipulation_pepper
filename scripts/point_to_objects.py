@@ -3,6 +3,8 @@ import qi
 import sys
 import math
 import rospy
+from math import degrees, acos
+import math
 
 #import ros msg and srv
 from robobreizh_msgs.srv import PointToObject
@@ -32,7 +34,8 @@ class PointToObjectMotion():
         point_y = PointToObject.point_y
         point_z = PointToObject.point_z
 
-        angle = math.sin(point_z/distance)
+        cos = math.acos(point_z/distance)
+        angle = degrees(cos)
         
         rospy.loginfo("Distance - Chair :" + str(distance))
         rospy.loginfo("Point z - Chair :" + str(point_z))
