@@ -13,14 +13,6 @@ chmod +x ./install.sh && ./install.sh
 
 ## Movement actions
 
-Possible actions : pose_middle, pose_dialog, raise_hand, pose_restaurant, stop_pose_restaurant
-
-Send actions with rosrun :
-
-```bash
-rosrun manipulation_pepper movement_client.py <ACTION_NAME>
-```
-
 Send actions by publishing a message ont the `/Movement/Goal` topic :
 
 ```bash
@@ -36,7 +28,25 @@ goal_id:
     nsecs: 0
   id: ''
 goal:
-  order: '<ACTION_NAME>'"
+  order: '<ACTION_NAME>'
+  target: 0"
 ```
 
-Replace <ACTION_NAME> with one of the possible actions (pose_middle, pose_dialog, raise_hand, pose_restaurant, stop_pose_restaurant)
+the target parameter is currently unused but is used for testing and future behaviors
+
+Replace <ACTION_NAME> with one of the possible actions
+
+list of possible actions
+
+```
+set_hand
+pose_middle
+pose_dialog
+pose_pregrasp
+pose_restaurant
+raise_hand
+grab_2arms
+release_grab_2arms
+grab_bag
+put_down_bag
+```

@@ -43,6 +43,11 @@ class MovementActionServer(object):
                     self.movement.pose_dialog()
                     success=True
 
+                elif(goal.order=="pose_pregrasp"):
+                    rospy.loginfo("Executing pose pre grasp")
+                    self.movement.pose_pregrasp()
+                    success=True                    
+
                 elif(goal.order=="pose_restaurant"):
                     rospy.loginfo("Executing pose restaurant")
                     self.movement.pose_restaurant()
