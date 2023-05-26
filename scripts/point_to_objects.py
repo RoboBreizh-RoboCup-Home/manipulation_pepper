@@ -8,7 +8,7 @@ import rospy
 from robobreizh_msgs.srv import PointToObject
 from manipulation_pepper.srv import EmptySrvResponse
 
-class PointToObject():
+class PointToObjectMotion():
     def __init__(self, app):
         app.start()
         session = app.session
@@ -66,8 +66,6 @@ class PointToObject():
         return EmptySrvResponse()
 
 
-
-
 if __name__ == "__main__":
     try:
         connection_url = "tcp://127.0.0.1:9559"
@@ -77,5 +75,5 @@ if __name__ == "__main__":
         print("Can't connect to Naoqi at ip \"" + ip + "\" on port " + str(port) + ".\n"
               "Please check your script arguments. Run with -h option for help.")
         sys.exit(1)
-    motion = PointToObject(app)
+    motion = PointToObjectMotion(app)
 
