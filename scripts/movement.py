@@ -193,6 +193,15 @@ class Movement :
         print(f"Publishing : {msg}")
         self.pub_angles.publish(msg)
 
+    def pose_pregrasp(self):
+        self.stop()
+        msg = JointAnglesWithSpeed()
+        msg.joint_names = self.joint_botharms
+        msg.joint_angles = self.pose_grab_2arms_1
+        msg.speed = 0.1
+        print(f"Publishing : {msg}")
+        self.pub_angles.publish(msg)
+
     ##Thread to maintain the robot in a restaurant pose
     #@param self
     def pose_restaurant_task(self):
