@@ -183,6 +183,7 @@ catkin_install_python(PROGRAMS
   scripts/point_to_position.py
   scripts/movement_client.py
   scripts/movement_server.py
+  scripts/point_to_objects.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
