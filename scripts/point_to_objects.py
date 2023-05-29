@@ -70,6 +70,8 @@ class PointToObjectMotion():
         self.motion_service.angleInterpolation(names, angleLists, timeLists, isAbsolute)
 
         # self.motion_service.wakeUp()
+        
+        return None
 
 if __name__ == "__main__":
     try:
