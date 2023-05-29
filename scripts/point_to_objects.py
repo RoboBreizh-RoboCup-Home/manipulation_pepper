@@ -3,7 +3,7 @@ import qi
 import sys
 import math
 import rospy
-from math import degrees, acos
+from math import degrees, acos, asin
 import math
 
 #import ros msg and srv
@@ -34,11 +34,11 @@ class PointToObjectMotion():
         point_y = PointToObject.point_y
         point_z = PointToObject.point_z
 
-        cos = math.acos(point_z/distance)
+        sin = math.asin(point_z/distance)
         
-        rospy.loginfo("cos-1 - Chair :" + str(cos))
+        rospy.loginfo("cos-1 - Chair :" + str(sin))
 
-        angle = degrees(cos)
+        angle = degrees(sin)
         
         rospy.loginfo("Distance - Chair :" + str(distance))
         rospy.loginfo("Point z - Chair :" + str(point_z))
