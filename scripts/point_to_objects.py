@@ -40,30 +40,53 @@ class PointToObjectMotion():
 
         angle = degrees(sin)
         
+                
         rospy.loginfo("Distance - Chair :" + str(distance))
         rospy.loginfo("Point z - Chair :" + str(point_z))
         rospy.loginfo("Angle - Chair :" + str(angle))
-                
-        # Example showing multiple trajectories
-        names = ["RShoulderPitch","RShoulderRoll","RElbowYaw","RElbowRoll","RWristYaw"]
+        
+        if (angle >=0) :
+            # Example showing multiple trajectories
+            names = ["RShoulderPitch","RShoulderRoll","RElbowYaw","RElbowRoll","RWristYaw"]
 
-        RShoulderPitchAngleLists = self.arrDegreeToRad([0.0]) # -119.5 / 119.5
-        RShoulderRollAngleLists = self.arrDegreeToRad([-10]) # -89.5 / -0.5
-        RElbowYawAngleLists = self.arrDegreeToRad([0.0]) # -119.5 / 119.5
-        RElbowRollAngleLists = self.arrDegreeToRad([0.0]) # 0.5 / -89.5
-        RWristYawAngleLists = self.arrDegreeToRad([90.0]) # -104.5 / 104.5
+            RShoulderPitchAngleLists = self.arrDegreeToRad([0.0]) # -119.5 / 119.5
+            RShoulderRollAngleLists = self.arrDegreeToRad([angle*(-1)]) # -89.5 / -0.5
+            RElbowYawAngleLists = self.arrDegreeToRad([0.0]) # -119.5 / 119.5
+            RElbowRollAngleLists = self.arrDegreeToRad([0.0]) # 0.5 / -89.5
+            RWristYawAngleLists = self.arrDegreeToRad([90.0]) # -104.5 / 104.5
 
-        angleLists = [RShoulderPitchAngleLists,RShoulderRollAngleLists,RElbowYawAngleLists,RElbowRollAngleLists,RWristYawAngleLists]
+            angleLists = [RShoulderPitchAngleLists,RShoulderRollAngleLists,RElbowYawAngleLists,RElbowRollAngleLists,RWristYawAngleLists]
 
-        # set times for joints every seconds
-        RShoulderPitchTimeLists = [5.0]
-        RShoulderRollTimeLists = [1.0]
-        RElbowYawTimeLists = [1.0]
-        RElbowRollTimeLists =[1.0]
-        RWristYawTimeLists = [1.0]
-        yawTimeLists = [1.0]
-        pitchTimeLists = [1.0]
-        timeLists = [RShoulderPitchTimeLists,RShoulderRollTimeLists,RElbowYawTimeLists,RElbowRollTimeLists,RWristYawTimeLists]
+            # set times for joints every seconds
+            RShoulderPitchTimeLists = [5.0]
+            RShoulderRollTimeLists = [3.0]
+            RElbowYawTimeLists = [1.0]
+            RElbowRollTimeLists =[1.0]
+            RWristYawTimeLists = [1.0]
+            yawTimeLists = [1.0]
+            pitchTimeLists = [1.0]
+            timeLists = [RShoulderPitchTimeLists,RShoulderRollTimeLists,RElbowYawTimeLists,RElbowRollTimeLists,RWristYawTimeLists]
+        else:
+            # Example showing multiple trajectories
+            names = ["LShoulderPitch","LShoulderRoll","LElbowYaw","LElbowRoll","LWristYaw"]
+
+            LShoulderPitchAngleLists = self.arrDegreeToRad([0.0]) # -119.5 / 119.5
+            LShoulderRollAngleLists = self.arrDegreeToRad([angle]) # -89.5 / -0.5
+            LElbowYawAngleLists = self.arrDegreeToRad([0.0]) # -119.5 / 119.5
+            LElbowRollAngleLists = self.arrDegreeToRad([0.0]) # 0.5 / -89.5
+            LWristYawAngleLists = self.arrDegreeToRad([-90.0]) # -104.5 / 104.5
+
+            angleLists = [LShoulderPitchAngleLists,LShoulderRollAngleLists,LElbowYawAngleLists,LElbowRollAngleLists,LWristYawAngleLists]
+
+            # set times for joints every seconds
+            LShoulderPitchTimeLists = [5.0]
+            LShoulderRollTimeLists = [3.0]
+            LElbowYawTimeLists = [1.0]
+            LElbowRollTimeLists =[1.0]
+            LWristYawTimeLists = [1.0]
+            yawTimeLists = [1.0]
+            pitchTimeLists = [1.0]
+            timeLists = [LShoulderPitchTimeLists,LShoulderRollTimeLists,LElbowYawTimeLists,LElbowRollTimeLists,LWristYawTimeLists]            
 
         isAbsolute = True
         isPointChair = True
