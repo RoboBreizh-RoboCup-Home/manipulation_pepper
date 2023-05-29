@@ -66,12 +66,13 @@ class PointToObjectMotion():
         timeLists = [RShoulderPitchTimeLists,RShoulderRollTimeLists,RElbowYawTimeLists,RElbowRollTimeLists,RWristYawTimeLists]
 
         isAbsolute = True
+        isPointChair = True
         print(angleLists)
         self.motion_service.angleInterpolation(names, angleLists, timeLists, isAbsolute)
 
         # self.motion_service.wakeUp()
         
-        return None
+        return isPointChair
 
 if __name__ == "__main__":
     try:
