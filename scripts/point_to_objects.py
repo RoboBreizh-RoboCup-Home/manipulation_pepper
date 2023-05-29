@@ -34,7 +34,7 @@ class PointToObjectMotion():
         point_y = PointToObject.point_y
         point_z = PointToObject.point_z
 
-        sin = math.asin(point_z/distance)
+        sin = math.asin(point_y/distance)
         
         rospy.loginfo("sin-1 - Chair :" + str(sin))
 
@@ -43,6 +43,7 @@ class PointToObjectMotion():
                 
         rospy.loginfo("Distance - Chair :" + str(distance))
         rospy.loginfo("Point z - Chair :" + str(point_z))
+        rospy.loginfo("Point y - Chair :" + str(point_y))
         rospy.loginfo("Angle - Chair :" + str(angle))
         
         if (angle >=0) :
