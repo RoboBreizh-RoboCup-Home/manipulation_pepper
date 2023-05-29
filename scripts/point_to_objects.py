@@ -35,6 +35,9 @@ class PointToObjectMotion():
         point_z = PointToObject.point_z
 
         cos = math.acos(point_z/distance)
+        
+        rospy.loginfo("cos-1 - Chair :" + str(cos))
+
         angle = degrees(cos)
         
         rospy.loginfo("Distance - Chair :" + str(distance))
