@@ -44,6 +44,7 @@ class PointToObjectMotion():
         rospy.loginfo("Distance - Chair :" + str(distance))
         rospy.loginfo("Point z - Chair :" + str(point_z))
         rospy.loginfo("Point y - Chair :" + str(point_y))
+        rospy.loginfo("Point x - Chair :" + str(point_y))
         rospy.loginfo("Angle - Chair :" + str(angle))
         
         if (angle >=0) :
