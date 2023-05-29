@@ -57,7 +57,7 @@ class PointToObjectMotion():
 
         # set times for joints every seconds
         RShoulderPitchTimeLists = [5.0]
-        RShoulderRollTimeLists = [5.0]
+        RShoulderRollTimeLists = [1.0]
         RElbowYawTimeLists = [1.0]
         RElbowRollTimeLists =[1.0]
         RWristYawTimeLists = [1.0]
