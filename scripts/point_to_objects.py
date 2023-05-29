@@ -48,7 +48,7 @@ class PointToObjectMotion():
         names = ["RShoulderPitch","RShoulderRoll","RElbowYaw","RElbowRoll","RWristYaw"]
 
         RShoulderPitchAngleLists = self.arrDegreeToRad([0.0]) # -119.5 / 119.5
-        RShoulderRollAngleLists = self.arrDegreeToRad([float(angle)]) # -89.5 / -0.5
+        RShoulderRollAngleLists = self.arrDegreeToRad([float(angle*-1)]) # -89.5 / -0.5
         RElbowYawAngleLists = self.arrDegreeToRad([0.0]) # -119.5 / 119.5
         RElbowRollAngleLists = self.arrDegreeToRad([0.0]) # 0.5 / -89.5
         RWristYawAngleLists = self.arrDegreeToRad([90.0]) # -104.5 / 104.5
