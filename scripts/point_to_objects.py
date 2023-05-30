@@ -47,6 +47,7 @@ class PointToObjectMotion():
         rospy.loginfo("Point x - Chair :" + str(point_y))
         rospy.loginfo("Angle - Chair :" + str(angle))
         
+        
         if (angle >=0) :
             # Example showing multiple trajectories
             names = ["RShoulderPitch","RShoulderRoll","RElbowYaw","RElbowRoll","RWristYaw"]
