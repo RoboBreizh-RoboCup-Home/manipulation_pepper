@@ -36,16 +36,16 @@ class PointToObjectMotion():
 
         sin = math.asin(point_y/distance)
         
-        rospy.loginfo("sin-1 - Chair :" + str(sin))
+        rospy.loginfo("sin-1 [Pointing Ob] :" + str(sin))
 
         angle = degrees(sin)
         
                 
-        rospy.loginfo("Distance - Chair :" + str(distance))
-        rospy.loginfo("Point z - Chair :" + str(point_z))
-        rospy.loginfo("Point y - Chair :" + str(point_y))
-        rospy.loginfo("Point x - Chair :" + str(point_x))
-        rospy.loginfo("Angle - Chair :" + str(angle))
+        rospy.loginfo("Distance [Pointing Ob] :" + str(distance))
+        rospy.loginfo("Point z [Pointing Ob] :" + str(point_z))
+        rospy.loginfo("Point y [Pointing Ob] :" + str(point_y))
+        rospy.loginfo("Point x [Pointing Ob] :" + str(point_x))
+        rospy.loginfo("Angle [Pointing Ob] :" + str(angle))
         
         
         if (angle <0) :
@@ -92,13 +92,12 @@ class PointToObjectMotion():
             timeLists = [LShoulderPitchTimeLists,LShoulderRollTimeLists,LElbowYawTimeLists,LElbowRollTimeLists,LWristYawTimeLists]            
 
         isAbsolute = True
-        isPointChair = True
-        print(angleLists)
+        isPointObject = True
         self.motion_service.angleInterpolation(names, angleLists, timeLists, isAbsolute)
 
         # self.motion_service.wakeUp()
         
-        return isPointChair
+        return isPointObject
 
 if __name__ == "__main__":
     try:
