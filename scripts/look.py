@@ -18,8 +18,8 @@ class Motion():
     def animate(self, req):
         # Example showing multiple trajectories
         names = ["HeadPitch", "HeadYaw"]
-        rad_head_pitch = np.deg2rad(req.head_pitch_angle).ravel
-        rad_head_yaw = np.deg2rad(req.head_yaw_angle).ravel()
+        rad_head_pitch = np.deg2rad(req.head_pitch_angle).tolist()
+        rad_head_yaw = np.deg2rad(req.head_yaw_angle).tolist()
         angleLists = [rad_head_pitch, rad_head_yaw]
 
         # set times for joints every seconds
