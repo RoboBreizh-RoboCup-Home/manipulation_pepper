@@ -176,6 +176,7 @@ CATKIN_DEPENDS message_runtime
 catkin_install_python(PROGRAMS
   scripts/move.py
   scripts/look.py
+  scripts/joint_angle_speed_srv.py
   scripts/look_around.py
   scripts/look_down.py
   scripts/look_top_right.py
