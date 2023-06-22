@@ -19,11 +19,11 @@ class Motion():
         names = req.joint_names
         angle_list = []
         for angle_list_req in req.angle_lists:
-                angle_list.append(np.deg2rad(angle_list_req.data).tolist())
+                angle_list.append(np.deg2rad(angle_list_req.values).tolist())
 
         time_list = []
         for time_list_req in req.time_lists:
-                time_list.append(time_list_req.data)
+                time_list.append(time_list_req.values)
 
         angleLists = angle_list
 
