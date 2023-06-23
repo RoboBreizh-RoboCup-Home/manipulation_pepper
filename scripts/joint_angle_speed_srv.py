@@ -18,17 +18,15 @@ class Motion():
         # Example showing multiple trajectories
         names = req.joint_names
         angle_list = []
-        for angle_list_req in req.angle_lists:
-                angle_list.append(np.deg2rad(angle_list_req.values).tolist())
+        for angle_list_req in req.angle_lists.data:
+                angle_list.append(np.deg2rad(angle_list_req.data).tolist())
 
         time_list = []
-        for time_list_req in req.time_lists:
-                time_list.append(time_list_req.values)
+        for time_list_req in req.time_lists.data:
+                time_list.append(time_list_req.data)
 
-        angleLists = angle_list
 
         # set times for joints every seconds
-        timeLists = req.time_lists
         isAbsolute = True
         print(names)
         print(angle_list)
