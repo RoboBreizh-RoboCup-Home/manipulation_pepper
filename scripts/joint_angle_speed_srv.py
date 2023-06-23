@@ -18,12 +18,12 @@ class Motion():
         # Example showing multiple trajectories
         names = req.joint_names
         angle_list = []
-        for angle_list_req in req.angle_lists.data:
-                angle_list.append(np.deg2rad(angle_list_req.data).tolist())
+        for angle_list_req in req.angle_lists.row:
+                angle_list.append(np.deg2rad(angle_list_req.col).tolist())
 
         time_list = []
-        for time_list_req in req.time_lists.data:
-                time_list.append(time_list_req.data)
+        for time_list_req in req.time_lists.row:
+                time_list.append(time_list_req.col)
 
 
         # set times for joints every seconds
