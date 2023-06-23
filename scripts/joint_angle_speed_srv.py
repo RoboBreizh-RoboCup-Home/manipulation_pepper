@@ -30,7 +30,10 @@ class Motion():
         # set times for joints every seconds
         timeLists = req.time_lists
         isAbsolute = True
-        self.motion_service.angleInterpolation(names, angleLists, timeLists, isAbsolute)
+        print(names)
+        print(angle_list)
+        print(time_list)
+        self.motion_service.angleInterpolation(names,angle_list ,time_list , isAbsolute)
         return (joint_positionResponse())
 
 
