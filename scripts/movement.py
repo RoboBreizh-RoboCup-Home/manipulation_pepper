@@ -318,11 +318,11 @@ class Movement :
         rospy.loginfo(f"Twist msgs")
         msg_twist = Twist()
         msg_twist.linear.x = 0.2
-        self.pub_turn(msg_twist)
+        self.pub_turn.publish(msg_twist)
         rospy.sleep(0.5)
         msg_twist = Twist()
         msg_twist.linear.x = 0.2
-        self.pub_turn(msg_twist)
+        self.pub_turn.publish(msg_twist)
 
 
         # LOWER ARMS (ShoulderPitch)
