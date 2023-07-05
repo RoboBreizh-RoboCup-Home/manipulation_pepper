@@ -205,8 +205,8 @@ class Movement :
     ##Thread to maintain the robot in a restaurant pose
     #@param self
     def pose_restaurant_task(self):
-        left = np.deg2rad([10,3,-79,-1,-105])
-        right = np.deg2rad([10,-3,79,1,105])
+        left = np.deg2rad([0,14,-9,-24,-105])
+        right = np.deg2rad([0,-14,9,24,105])
 
         msgl = JointAnglesWithSpeed()
         msgl.joint_names = self.joint_larm
