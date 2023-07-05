@@ -310,7 +310,13 @@ class Movement :
 
         # BASE POSE
         rospy.loginfo(f"calling pregrasp pose")
-        self.pose_pregrasp()
+        self.stop()
+        msg = JointAnglesWithSpeed()
+        msg.joint_names = self.joint_botharms
+        msg.joint_angles = self.pose_grab_2arms_1
+        msg.speed = 0.1
+        print(f"pose_pregrasp")
+        self.pub_angles.publish(msg)
         time.sleep(2)
 
         # GO TOWARDS OBJECT
@@ -327,7 +333,6 @@ class Movement :
 
         # LOWER ARMS (ShoulderPitch)
         rospy.loginfo(f"Lower arms")
-        msg = JointAnglesWithSpeed()
         msg.joint_names = ["RShoulderPitch","LShoulderPitch"]
         msg.joint_angles = np.deg2rad([spitch,spitch])
 
@@ -348,7 +353,7 @@ class Movement :
         [msg.joint_angles[0], msg.joint_angles[5]] = np.deg2rad([spitch, spitch])
         [msg.joint_angles[1], msg.joint_angles[6]] = np.deg2rad([sroll, -1*sroll])
         
-        rospy.loginfo(f"HOLD LAST POSE\n{msg}")
+        rospy.loginfo(f"HOLD LAST POSE")
         self.last_pose = msg
 
         self.hold_last_pose()
