@@ -78,8 +78,8 @@ class Movement :
         self.pose_grab_2arms_r2 = np.deg2rad([0,-20,2,43,82])
         self.pose_grab_2arms_r3 = np.deg2rad([0,-10,2,43,82])
 
-        self.pose_grab_2arms_1 = np.deg2rad([-30,20,0,-45,-82,  #LARM
-                                             -30,-20,0,45,82])   #RARM
+        self.pose_grab_2arms_1 = np.deg2rad([-30,40,0,-45,-82,  #LARM
+                                             -30,-40,0,45,82])   #RARM
 
 
         ##################################
@@ -283,7 +283,7 @@ class Movement :
     #@param self
     def hold_bag(self):
         self.holding_bag = True
-        self.thread_hold_bag = Thread(target=self.crouch_task)
+        self.thread_hold_bag = Thread(target=self.hold_bag_task)
         self.thread_hold_bag.start()
 
     ##Thread to maintain the robot holding a bag
