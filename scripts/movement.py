@@ -199,7 +199,7 @@ class Movement :
         msg.joint_names = self.joint_botharms
         msg.joint_angles = self.pose_grab_2arms_1
         msg.speed = 0.1
-        print(f"Publishing : {msg}")
+        print(f"pose_pregrasp")
         self.pub_angles.publish(msg)
 
     ##Thread to maintain the robot in a restaurant pose
@@ -311,19 +311,19 @@ class Movement :
         # BASE POSE
         rospy.loginfo(f"calling pregrasp pose")
         self.pose_pregrasp()
-        rospy.sleep(3.0)
+        time.sleep(2)
 
         # GO TOWARDS OBJECT
 
-        rospy.loginfo(f"Twist msgs")
-        msg_twist = Twist()
-        msg_twist.linear.x = 0.2
-        self.pub_turn.publish(msg_twist)
-        rospy.sleep(0.2)
-        msg_twist = Twist()
-        msg_twist.linear.x = 0.2
-        self.pub_turn.publish(msg_twist)
-        rospy.sleep(3.)
+        # rospy.loginfo(f"Twist msgs")
+        # msg_twist = Twist()
+        # msg_twist.linear.x = 0.2
+        # self.pub_turn.publish(msg_twist)
+        # time.sleep(0.2)
+        # msg_twist = Twist()
+        # msg_twist.linear.x = 0.2
+        # self.pub_turn.publish(msg_twist)
+        # time.sleep(2)
 
         # LOWER ARMS (ShoulderPitch)
         rospy.loginfo(f"Lower arms")
@@ -331,16 +331,16 @@ class Movement :
         msg.joint_names = ["RShoulderPitch","LShoulderPitch"]
         msg.joint_angles = np.deg2rad([spitch,spitch])
 
-        rospy.loginfo(f"second msg :\n{msg}")
+        #rospy.loginfo(f"second msg :\n{msg}")
         self.pub_angles.publish(msg)
-        rospy.sleep(1.)
+        time.sleep(2)
 
         # GRAB WITH ARMS (ShoulderRoll)
         rospy.loginfo(f"Grab")
         msg.joint_names = ["LShoulderRoll","RShoulderRoll"]
         msg.joint_angles = np.deg2rad([sroll,-1*sroll])
 
-        rospy.loginfo(f"third msg :\n{msg}")
+        #rospy.loginfo(f"third msg :\n{msg}")
         self.pub_angles.publish(msg)
 
         msg.joint_names = self.joint_botharms
@@ -368,14 +368,14 @@ class Movement :
 
         self.pub_angles.publish(msg)
         rospy.loginfo(msg)
-        rospy.sleep(3.)
+        time.sleep(2)
 
         # RAISE ARMS (ShoulderPitch)
         msg.joint_names = ["RShoulderPitch","LShoulderPitch"]
         msg.joint_angles = np.deg2rad([-1*spitch,spitch])
         self.pub_angles.publish(msg)
         rospy.loginfo(msg)
-        rospy.sleep(3.)
+        time.sleep(2)
         
 
     ##Function to make the robot hold the last registered pose (starts a thread)

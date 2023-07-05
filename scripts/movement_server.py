@@ -85,6 +85,13 @@ class MovementActionServer(object):
                     self.movement.hold_bag()
                     success=True
 
+                elif(goal.order=="grab_right"):
+                    rospy.loginfo("Executing grab bag")
+                    self.movement.straight_arm()
+                    rospy.sleep(1)
+                    self.movement.set_hand(0.0)
+                    success=True
+
                 elif(goal.order=="put_down_bag"):
                     rospy.loginfo("Executing grab bag")
                     self.movement.crouch()
@@ -106,7 +113,12 @@ class MovementActionServer(object):
 
                 elif(goal.order=="grab_2arms"):
                     rospy.loginfo("Executing grab_2arms")
-                    self.movement.grab_2arms()
+                    if(goal.target[0] and goal.target[1]):
+                        rospy.loginfo("Got 2 values")
+                        self.movement.grab_2arms(goal.target[0],goal.target[1])
+                    else:
+                        rospy.loginfo("Got no values")
+                        self.movement.grab_2arms()
                     success=True
 
                 elif(goal.order=="release_grab_2arms"):
