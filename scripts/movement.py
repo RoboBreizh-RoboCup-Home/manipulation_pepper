@@ -352,7 +352,7 @@ class Movement :
     def release_grab_2arms(self):
         self.stop_hold_last_pose()
         spitch = 30
-        sroll = 25
+        sroll = 75
 
         # open arms
         msg = JointAnglesWithSpeed()
