@@ -309,11 +309,13 @@ class Movement :
         sroll = 0.024*object_width**2 + 0.310*object_width + 7.9
 
         # BASE POSE
+        rospy.loginfo(f"calling pregrasp pose")
         self.pose_pregrasp()
         rospy.sleep(3)
 
         # GO TOWARDS OBJECT
 
+        rospy.loginfo(f"Twist msgs")
         msg_twist = Twist()
         msg_twist.linear.x = 0.2
         self.pub_turn(msg_twist)
@@ -324,6 +326,7 @@ class Movement :
 
 
         # LOWER ARMS (ShoulderPitch)
+        rospy.loginfo(f"Lower arms")
         msg = JointAnglesWithSpeed()
         msg.joint_names = ["RShoulderPitch","LShoulderPitch"]
         msg.joint_angles = np.deg2rad([spitch,spitch])
@@ -333,6 +336,7 @@ class Movement :
         rospy.sleep(1)
 
         # GRAB WITH ARMS (ShoulderRoll)
+        rospy.loginfo(f"Grab")
         msg.joint_names = ["LShoulderRoll","RShoulderRoll"]
         msg.joint_angles = np.deg2rad([sroll,-1*sroll])
 
@@ -348,6 +352,8 @@ class Movement :
         self.last_pose = msg
 
         self.hold_last_pose()
+        rospy.loginfo(f"Grab2arms finished")
+
 
     def release_grab_2arms(self):
         self.stop_hold_last_pose()
