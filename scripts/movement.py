@@ -156,7 +156,7 @@ class Movement :
     #@param self
     def maintain_hand_task(self):
         msg = JointAnglesWithSpeed()
-        msg.joint_names = [self.joint_rhand,self.joint_lhand]
+        msg.joint_names = [self.joint_rhand[0],self.joint_lhand[0]]
         msg.speed = 0.4
 
         while(self.maintain_hand_pose):
@@ -205,8 +205,8 @@ class Movement :
     ##Thread to maintain the robot in a restaurant pose
     #@param self
     def pose_restaurant_task(self):
-        left = np.deg2rad([-10,9,-9,-30,-105])
-        right = np.deg2rad([-10,-9,9,30,105])
+        left = np.deg2rad([53.8,7.5,-53.4,-70.5,1.7])
+        right = np.deg2rad([53.8,-7.5,53.4,70,1.7])
 
         msgl = JointAnglesWithSpeed()
         msgl.joint_names = self.joint_larm
