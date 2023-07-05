@@ -160,7 +160,7 @@ class Movement :
         msg.speed = 0.4
 
         while(self.maintain_hand_pose):
-            msg.joint_angles = tuple([self.hand_joint_value,self.hand_joint_value])
+            msg.joint_angles = [self.hand_joint_value,self.hand_joint_value]
             rospy.sleep(0.5)
             self.pub_angles.publish(msg)
 
