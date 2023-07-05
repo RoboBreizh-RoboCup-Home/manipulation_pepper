@@ -156,11 +156,11 @@ class Movement :
     #@param self
     def maintain_hand_task(self):
         msg = JointAnglesWithSpeed()
-        msg.joint_names = self.joint_rhand
+        msg.joint_names = [self.joint_rhand[0],self.joint_lhand[0]]
         msg.speed = 0.4
 
         while(self.maintain_hand_pose):
-            msg.joint_angles = tuple([self.hand_joint_value])
+            msg.joint_angles = [self.hand_joint_value,self.hand_joint_value]
             rospy.sleep(0.5)
             self.pub_angles.publish(msg)
 
@@ -205,8 +205,9 @@ class Movement :
     ##Thread to maintain the robot in a restaurant pose
     #@param self
     def pose_restaurant_task(self):
-        left = np.deg2rad([18,3,-45,-35,-105])
-        right = np.deg2rad([18,-3,45,35,105])
+        #["LShoulderPitch", "LShoulderRoll", "LElbowYaw", "LElbowRoll", "LWristYaw"]
+        left = np.deg2rad([53.8,7.5,-70.5,-53,1.7])
+        right = np.deg2rad([53.8,-7.5,70.5,53,1.7])
 
         msgl = JointAnglesWithSpeed()
         msgl.joint_names = self.joint_larm
@@ -307,24 +308,23 @@ class Movement :
         spitch = -1.026*table_height+92.31
         sroll = 0.024*object_width**2 + 0.310*object_width + 7.9
 
-        # reculer?
-
         # BASE POSE
-        msg = JointAnglesWithSpeed()
-        msg.joint_names = self.joint_botharms
-        msg.joint_angles = self.pose_grab_2arms_1
-        msg.speed = 0.1
-
-        rospy.loginfo(f"first msg :\n{msg}")
-        self.pub_angles.publish(msg)
+        self.pose_pregrasp()
         rospy.sleep(3)
 
         # GO TOWARDS OBJECT
-        # msg_twist = Twist()
-        # msg_twist.linear.x = 0.2
-        # self.pub_turn(msg_twist)
+
+        msg_twist = Twist()
+        msg_twist.linear.x = 0.2
+        self.pub_turn(msg_twist)
+        rospy.sleep(0.5)
+        msg_twist = Twist()
+        msg_twist.linear.x = 0.2
+        self.pub_turn(msg_twist)
+
 
         # LOWER ARMS (ShoulderPitch)
+        msg = JointAnglesWithSpeed()
         msg.joint_names = ["RShoulderPitch","LShoulderPitch"]
         msg.joint_angles = np.deg2rad([spitch,spitch])
 
