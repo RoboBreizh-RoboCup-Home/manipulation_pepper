@@ -156,11 +156,11 @@ class Movement :
     #@param self
     def maintain_hand_task(self):
         msg = JointAnglesWithSpeed()
-        msg.joint_names = self.joint_rhand
+        msg.joint_names = [self.joint_rhand,self.joint_lhand]
         msg.speed = 0.4
 
         while(self.maintain_hand_pose):
-            msg.joint_angles = tuple([self.hand_joint_value])
+            msg.joint_angles = tuple([self.hand_joint_value,self.hand_joint_value])
             rospy.sleep(0.5)
             self.pub_angles.publish(msg)
 
@@ -205,8 +205,8 @@ class Movement :
     ##Thread to maintain the robot in a restaurant pose
     #@param self
     def pose_restaurant_task(self):
-        left = np.deg2rad([0,14,-9,-24,-105])
-        right = np.deg2rad([0,-14,9,24,105])
+        left = np.deg2rad([-10,14,-9,-28,-105])
+        right = np.deg2rad([-10,-14,9,28,105])
 
         msgl = JointAnglesWithSpeed()
         msgl.joint_names = self.joint_larm
