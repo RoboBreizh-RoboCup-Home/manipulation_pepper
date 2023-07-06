@@ -308,8 +308,8 @@ class Movement :
         msg = JointAnglesWithSpeed()
         msg.joint_names = self.joint_botharms
         #["LShoulderPitch", "LShoulderRoll", "LElbowYaw", "LElbowRoll", "LWristYaw"]
-        msg.joint_angles = np.deg2rad([6,1,49,-51,-101,  #LARM
-                                        6,1,-49,51,101])   #RARM
+        msg.joint_angles = np.deg2rad([6,2,-49,-51,-101,  #LARM
+                                        6,2,49,51,101])   #RARM
         msg.speed = 0.1
         while self.getobj:
             self.pub_angles.publish(msg)
@@ -435,6 +435,9 @@ class Movement :
         if self.holding_bag:
             self.holding_bag = False
             self.thread_hold_bag.join()
+        if self.getobj:
+            self.getobj = False
+            self.thread_getobj.join()
         if self.maintain_hand_pose:
             self.maintain_hand_pose = False
             self.thread_hand.join()
