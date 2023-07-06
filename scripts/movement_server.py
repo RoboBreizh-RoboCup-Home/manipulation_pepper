@@ -33,6 +33,11 @@ class MovementActionServer(object):
                     self.movement.stop_hand()
                     success=True
 
+                elif(goal.order=="close_hand"):
+                    rospy.loginfo("Executing close hand")
+                    self.movement.set_hand(0.0)
+                    success=True
+
                 elif(goal.order =="pose_middle"):
                     rospy.loginfo("Executing pose middle")
                     self.movement.pose_middle()
@@ -75,6 +80,16 @@ class MovementActionServer(object):
                 elif(goal.order=="straight_arm"):
                     rospy.loginfo("Executing straight arm")
                     self.movement.straight_arm()
+                    success=True
+
+                elif(goal.order=="pose_straightarm"):
+                    rospy.loginfo("Executing straight arm")
+                    self.movement.straight_arm()
+                    success=True
+
+                elif(goal.order=="pose_getobject"):
+                    rospy.loginfo("Executing pose get object")
+                    self.movement.pose_getobject()
                     success=True
 
                 elif(goal.order=="grab_bag"):

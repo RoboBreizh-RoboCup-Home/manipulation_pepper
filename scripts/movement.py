@@ -92,6 +92,7 @@ class Movement :
         self.maintain_hand_pose = False
         self.last_pose = None
         self.holding_pose = False
+        self.getobj = False
 
         ##################################
         # THREADS
@@ -101,6 +102,7 @@ class Movement :
         self.thread_hold_bag = None
         self.thread_hand = None
         self.thread_hold_last_pose = None
+        self.thread_getobj = None
 
     ##Destructor of a Movement object
     #@param self
@@ -296,6 +298,22 @@ class Movement :
         while self.crouching:
             self.pub_angles.publish(msg)
 
+    def pose_getobject(self):
+        self.getobj = True
+        self.thread_getobj= Thread(target=self.pose_getobject_task)
+        self.thread_getobj.start()
+
+
+    def pose_getobject_task(self):
+        msg = JointAnglesWithSpeed()
+        msg.joint_names = self.joint_botharms
+        #["LShoulderPitch", "LShoulderRoll", "LElbowYaw", "LElbowRoll", "LWristYaw"]
+        msg.joint_angles = np.deg2rad([6,1,49,-51,-101,  #LARM
+                                        6,1,-49,51,101])   #RARM
+        msg.speed = 0.1
+        while self.getobj:
+            self.pub_angles.publish(msg)
+
     ##Function to stop the bag holding thread
     #@param self
     def stop_hold_bag(self):
@@ -377,7 +395,7 @@ class Movement :
 
         # RAISE ARMS (ShoulderPitch)
         msg.joint_names = ["RShoulderPitch","LShoulderPitch"]
-        msg.joint_angles = np.deg2rad([-1*spitch,spitch])
+        msg.joint_angles = np.deg2rad([spitch,spitch])
         self.pub_angles.publish(msg)
         rospy.loginfo(msg)
         rospy.sleep(2)
