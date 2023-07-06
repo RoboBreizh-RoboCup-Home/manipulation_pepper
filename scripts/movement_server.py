@@ -116,11 +116,9 @@ class MovementActionServer(object):
                 
                 elif(goal.order=="test"):
                     rospy.loginfo("Executing test")
-                    target = self.movement.movegroup_rarm.get_random_pose()
-                    plan = self.movement.plan_6d_pose(target)
                     rospy.sleep(1)
-                    success = self.execute(plan)
-
+                    success = True
+                    
                 elif(goal.order=="stop"):
                     rospy.loginfo("Stopping current action")
                     self.movement.stop()

@@ -65,9 +65,9 @@ add_service_files(
 
 ## Generate actions in the 'action' folder
 add_action_files(
-  DIRECTORY 
-  action 
-  FILES 
+  DIRECTORY
+  action
+  FILES
   Movement.action
 )
 
@@ -175,6 +175,8 @@ CATKIN_DEPENDS message_runtime
 ## in contrast to setup.py, you can choose the destination
 catkin_install_python(PROGRAMS
   scripts/move.py
+  scripts/look.py
+  scripts/joint_angle_speed_srv.py
   scripts/look_around.py
   scripts/look_down.py
   scripts/look_top_right.py
