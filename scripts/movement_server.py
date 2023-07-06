@@ -33,6 +33,11 @@ class MovementActionServer(object):
                     self.movement.stop_hand()
                     success=True
 
+                elif(goal.order=="close_hand"):
+                    rospy.loginfo("Executing close hand")
+                    self.movement.set_hand(0.0)
+                    success=True
+
                 elif(goal.order =="pose_middle"):
                     rospy.loginfo("Executing pose middle")
                     self.movement.pose_middle()
@@ -77,12 +82,29 @@ class MovementActionServer(object):
                     self.movement.straight_arm()
                     success=True
 
+                elif(goal.order=="pose_straightarm"):
+                    rospy.loginfo("Executing straight arm")
+                    self.movement.straight_arm()
+                    success=True
+
+                elif(goal.order=="pose_getobject"):
+                    rospy.loginfo("Executing pose get object")
+                    self.movement.pose_getobject()
+                    success=True
+
                 elif(goal.order=="grab_bag"):
                     rospy.loginfo("Executing grab bag")
                     #self.movement.crouch()
                     self.movement.straight_arm()
                     rospy.sleep(1)
                     self.movement.hold_bag()
+                    success=True
+
+                elif(goal.order=="grab_right"):
+                    rospy.loginfo("Executing grab bag")
+                    self.movement.straight_arm()
+                    rospy.sleep(1)
+                    self.movement.set_hand(0.0)
                     success=True
 
                 elif(goal.order=="put_down_bag"):
@@ -106,7 +128,12 @@ class MovementActionServer(object):
 
                 elif(goal.order=="grab_2arms"):
                     rospy.loginfo("Executing grab_2arms")
-                    self.movement.grab_2arms()
+                    if(goal.target[0] and goal.target[1]):
+                        rospy.loginfo("Got 2 values")
+                        self.movement.grab_2arms(goal.target[0],goal.target[1])
+                    else:
+                        rospy.loginfo("Got no values")
+                        self.movement.grab_2arms()
                     success=True
 
                 elif(goal.order=="release_grab_2arms"):
