@@ -209,7 +209,7 @@ class Movement :
     def pose_restaurant_task(self):
         #["LShoulderPitch", "LShoulderRoll", "LElbowYaw", "LElbowRoll", "LWristYaw"]
         left = np.deg2rad([53.8,7.5,-70.5,-53,1.7])
-        right = np.deg2rad([53.8,-7.5,70.5,53,1.7])
+        right = np.deg2rad([53.8,-7.5,70.5,53,-1.7])
 
         msgl = JointAnglesWithSpeed()
         msgl.joint_names = self.joint_larm
@@ -309,10 +309,19 @@ class Movement :
         msg.joint_names = self.joint_botharms
         #["LShoulderPitch", "LShoulderRoll", "LElbowYaw", "LElbowRoll", "LWristYaw"]
         msg.joint_angles = np.deg2rad([6,2,-49,-51,-101,  #LARM
-                                        6,2,49,51,101])   #RARM
+                                        6,-2,49,51,101])   #RARM
         msg.speed = 0.1
         while self.getobj:
             self.pub_angles.publish(msg)
+
+    def pose_release2arms(self):
+        msg = JointAnglesWithSpeed()
+        msg.joint_names = self.joint_botharms
+        msg.joint_angles = np.deg2rad([6,10,-49,-51,-40,  #LARM
+                                        6,-10,49,51,40])   #RARM
+        msg.speed = 0.1
+        self.pub_angles.publish(msg)
+
 
     ##Function to stop the bag holding thread
     #@param self

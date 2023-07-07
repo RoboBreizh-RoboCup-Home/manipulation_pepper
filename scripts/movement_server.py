@@ -92,6 +92,12 @@ class MovementActionServer(object):
                     self.movement.pose_getobject()
                     success=True
 
+                elif(goal.order=="pose_release2arms"):
+                    rospy.loginfo("Executing pose_release2arms")
+                    self.movement.pose_release2arms()
+                    self.stop()
+                    success=True
+
                 elif(goal.order=="grab_bag"):
                     rospy.loginfo("Executing grab bag")
                     #self.movement.crouch()
