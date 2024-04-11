@@ -50,3 +50,17 @@ release_grab_2arms
 grab_bag
 put_down_bag
 ```
+
+## Citations
+
+If you use this project, please consider citing:
+
+```
+@incollection{buche2023robocup,
+  title={RoboCup@ Home SSPL Champion 2023: RoboBreizh, a Fully Embedded Approach},
+  author={Buche, C{\'e}dric and Neau, Ma{\"e}lic and Ung, Thomas and Li, Louis and Wang, Sinuo and Bono, C{\'e}dric Le},
+  booktitle={Robot World Cup},
+  pages={374--385},
+  year={2023},
+  publisher={Springer}
+}
